@@ -18,11 +18,27 @@ def lire_fichier():
     if not chemin_fichier:
         return None
     try:
-        return pd.read_csv(chemin_fichier, delimiter=';', names=['angle', 'rayon'])
+        # Lire le fichier en supposant qu'il contient uniquement des rayons
+        rayons = pd.read_csv(chemin_fichier, delimiter=';', names=['rayon'])
+        
+        # Générer des angles séquentiels (1, 2, 3, ...) en fonction du nombre de rayons
+        angles = np.arange(1, len(rayons) + 1)  # Angles séquentiels : 1, 2, 3, ...
+        
+        # Créer un DataFrame avec les angles et les rayons
+        donnees = pd.DataFrame({'angle': angles, 'rayon': rayons['rayon']})
+        
+        # Mettre à jour le champ des rayons avec les valeurs du fichier
+        entree_rayons.delete(0, tk.END)  # Effacer le contenu actuel
+        entree_rayons.insert(0, ','.join(map(str, rayons['rayon'].tolist())))  # Insérer les rayons
+        
+        # Mettre à jour le champ des angles avec les angles générés
+        entree_angles.delete(0, tk.END)  # Effacer le contenu actuel
+        entree_angles.insert(0, ','.join(map(str, angles.tolist())))  # Insérer les angles
+        
+        return donnees
     except Exception as e:
         messagebox.showerror("Erreur", f"Impossible de lire le fichier : {e}")
         return None
-
 # 2. Fonction pour tracer les données en coordonnées polaires
 def tracer_polaire(donnees, offset=0, echelle=1):
     angles = np.deg2rad(donnees['angle'])
