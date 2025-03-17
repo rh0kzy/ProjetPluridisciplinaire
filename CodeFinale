@@ -18,7 +18,11 @@ def lire_fichier():
     if not chemin_fichier:
         return None
     try:
-        return pd.read_csv(chemin_fichier, delimiter=';', names=['angle', 'rayon'])
+        # Lire le fichier
+        donnees = pd.read_csv(chemin_fichier, delimiter=';', names=['rayon'])
+        donnees['angle'] = list(range(1, len(donnees) + 1))  # Générer les angles automatiquement
+        messagebox.showinfo("Succès", "Données chargées avec succès et assignées aux rayons.")
+        return donnees
     except Exception as e:
         messagebox.showerror("Erreur", f"Impossible de lire le fichier : {e}")
         return None
