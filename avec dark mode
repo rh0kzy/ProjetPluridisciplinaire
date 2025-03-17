@@ -1,0 +1,99 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import sys
+import serial
+from mpl_toolkits.mplot3d import Axes3D
+
+try:
+    import tkinter as tk
+    from tkinter import ttk, filedialog, messagebox
+except ModuleNotFoundError:
+    print("Erreur : tkinter n'est pas installé. Veuillez l'installer avant d'exécuter ce programme.")
+    sys.exit(1)
+
+# ========== THEME SETUP ==========
+current_theme = 'light'
+
+themes = {
+    'light': {
+        'bg': '#f0f0f0',
+        'fg': '#000000',
+        'entry_bg': '#ffffff',
+        'button_bg': '#e0e0e0'
+    },
+    'dark': {
+        'bg': '#2e2e2e',
+        'fg': '#ffffff',
+        'entry_bg': '#3c3f41',
+        'button_bg': '#5c5c5c'
+    }
+}
+
+def appliquer_theme(theme):
+    fenetre.configure(bg=themes[theme]['bg'])
+    for widget in fenetre.winfo_children():
+        if isinstance(widget, (tk.Label, ttk.Label)):
+            widget.configure(background=themes[theme]['bg'], foreground=themes[theme]['fg'])
+        elif isinstance(widget, (tk.Entry, ttk.Entry)):
+            widget.configure(background=themes[theme]['entry_bg'], foreground=themes[theme]['fg'])
+        elif isinstance(widget, tk.Button):
+            widget.configure(bg=themes[theme]['button_bg'], fg=themes[theme]['fg'], activebackground=themes[theme]['entry_bg'])
+        elif isinstance(widget, ttk.Button):
+            style = ttk.Style()
+            style.configure('TButton', background=themes[theme]['button_bg'], foreground=themes[theme]['fg'])
+
+def toggle_theme():
+    global current_theme
+    current_theme = 'dark' if current_theme == 'light' else 'light'
+    appliquer_theme(current_theme)
+
+# ==================================
+
+# ... (functions lire_fichier, tracer_polaire, tracer_spherique, collecter_donnees, mettre_a_jour_graphique, lire_port_usb remain unchanged) ...
+
+# Interface utilisateur
+fenetre = tk.Tk()
+fenetre.title("Visualisation des Données Polaires et Sphériques")
+
+# Apply default theme
+appliquer_theme(current_theme)
+
+# Widgets
+ttk.Button(fenetre, text="Charger un fichier", command=lire_fichier).grid(row=0, column=0, columnspan=2)
+
+ttk.Label(fenetre, text="Angles (°) :").grid(row=1, column=0)
+entree_angles = tk.Entry(fenetre)
+entree_angles.grid(row=1, column=1)
+
+ttk.Label(fenetre, text="Rayons :").grid(row=2, column=0)
+entree_rayons = tk.Entry(fenetre)
+entree_rayons.grid(row=2, column=1)
+
+ttk.Label(fenetre, text="Offset :").grid(row=3, column=0)
+entree_offset = tk.Entry(fenetre)
+entree_offset.grid(row=3, column=1)
+entree_offset.insert(0, "0")
+
+ttk.Label(fenetre, text="Échelle :").grid(row=4, column=0)
+entree_echelle = tk.Entry(fenetre)
+entree_echelle.grid(row=4, column=1)
+entree_echelle.insert(0, "1")
+
+ttk.Label(fenetre, text="Port USB :").grid(row=5, column=0)
+entree_port_usb = tk.Entry(fenetre)
+entree_port_usb.grid(row=5, column=1)
+entree_port_usb.insert(0, "COM3")
+
+ttk.Button(fenetre, text="Tracer en Polaire", command=lambda: mettre_a_jour_graphique("polaire")).grid(row=6, column=0, columnspan=2)
+ttk.Button(fenetre, text="Tracer en Sphérique", command=lambda: mettre_a_jour_graphique("spherique")).grid(row=7, column=0, columnspan=2)
+ttk.Button(fenetre, text="Lire depuis USB", command=lire_port_usb).grid(row=8, column=0, columnspan=2)
+
+# Toggle theme button
+tk.Button(fenetre, text="Changer Mode (Clair/Sombre)", command=toggle_theme).grid(row=9, column=0, columnspan=2)
+
+# Appliquer thème initial
+appliquer_theme(current_theme)
+
+# Lancer l'interface
+fenetre.mainloop()

@@ -90,9 +90,23 @@ def lire_port_usb():
     finally:
         ser.close()
 
+# Fonction pour centrer la fenêtre
+def centrer_fenetre(fenetre):
+    fenetre.update_idletasks()
+    largeur_fenetre = fenetre.winfo_width()
+    hauteur_fenetre = fenetre.winfo_height()
+    largeur_ecran = fenetre.winfo_screenwidth()
+    hauteur_ecran = fenetre.winfo_screenheight()
+    position_x = (largeur_ecran // 2) - (largeur_fenetre // 2)
+    position_y = (hauteur_ecran // 2) - (hauteur_fenetre // 2)
+    fenetre.geometry(f"{largeur_fenetre}x{hauteur_fenetre}+{position_x}+{position_y}")
+
 # Interface utilisateur
 fenetre = tk.Tk()
 fenetre.title("Visualisation des Données Polaires et Sphériques")
+
+# Interdire le redimensionnement de la fenêtre
+fenetre.resizable(False, False)
 
 # Bouton pour charger un fichier
 ttk.Button(fenetre, text="Charger un fichier", command=lire_fichier).grid(row=0, column=0, columnspan=2)
@@ -135,4 +149,5 @@ ttk.Button(fenetre, text="Tracer en Sphérique", command=lambda: mettre_a_jour_g
 ttk.Button(fenetre, text="Lire depuis USB", command=lire_port_usb).grid(row=8, column=0, columnspan=2)
 
 # Lancer l'interface
+centrer_fenetre(fenetre)
 fenetre.mainloop()
