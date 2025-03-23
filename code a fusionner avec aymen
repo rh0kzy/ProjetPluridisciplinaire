@@ -39,25 +39,26 @@ def lire_fichier():
     except Exception as e:
         messagebox.showerror("Erreur", f"Impossible de lire le fichier : {e}")
         return None
+
 # 2. Fonction pour tracer les données en coordonnées polaires
-def tracer_polaire(donnees, offset=0, echelle=1):
+def tracer_polaire(donnees, offset=0):
     angles = np.deg2rad(donnees['angle'])
-    rayons = donnees['rayon'] * echelle
+    rayons = donnees['rayon']
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     ax.plot(angles, rayons, label="Données")
     ax.set_rorigin(-offset)
-    ax.set_title("Graphique Polaire avec Offset et Échelle")
+    ax.set_title("Graphique Polaire avec Offset")
     ax.legend()
     plt.show()
 
 # 3. Fonction pour tracer en coordonnées sphériques
-def tracer_spherique(donnees, echelle=1):
+def tracer_spherique(donnees):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     angles = np.deg2rad(donnees['angle'])
-    rayons = donnees['rayon'] * echelle
+    rayons = donnees['rayon']
     x = rayons * np.cos(angles)
     y = rayons * np.sin(angles)
     z = np.linspace(0, max(rayons), len(rayons))
@@ -93,17 +94,21 @@ def collecter_donnees():
         messagebox.showerror("Erreur", "Veuillez entrer uniquement des nombres valides séparés par des virgules.")
         return None
 
+
 # 5. Fonction pour mettre à jour le graphique
 def mettre_a_jour_graphique(mode="polaire"):
     donnees = collecter_donnees()
     if donnees is not None:
         offset = float(entree_offset.get())
-        echelle = float(entree_echelle.get())
+        max_offset = min(donnees['rayon'])
+        if offset > max_offset:
+            messagebox.showwarning("Avertissement", f"L'offset ne peut pas dépasser {max_offset}. Utilisation de 0 à la place.")
+            offset = 0
         if mode == "polaire":
-            tracer_polaire(donnees, offset, echelle)
+            tracer_polaire(donnees, offset)
         elif mode == "spherique":
-            tracer_spherique(donnees, echelle)
-
+            tracer_spherique(donnees)
+            
 # 6. Fonction pour lire les données USB
 def lire_port_usb():
     port = entree_port_usb.get()
@@ -142,26 +147,20 @@ entree_offset = ttk.Entry(fenetre)
 entree_offset.grid(row=3, column=1)
 entree_offset.insert(0, "0")
 
-# Champs pour l'échelle
-ttk.Label(fenetre, text="Échelle :").grid(row=4, column=0)
-entree_echelle = ttk.Entry(fenetre)
-entree_echelle.grid(row=4, column=1)
-entree_echelle.insert(0, "1")
-
 # Champs pour le port USB
-ttk.Label(fenetre, text="Port USB :").grid(row=5, column=0)
+ttk.Label(fenetre, text="Port USB :").grid(row=4, column=0)
 entree_port_usb = ttk.Entry(fenetre)
-entree_port_usb.grid(row=5, column=1)
+entree_port_usb.grid(row=4, column=1)
 entree_port_usb.insert(0, "COM3")
 
 # Bouton pour afficher le graphique polaire
-ttk.Button(fenetre, text="Tracer en Polaire", command=lambda: mettre_a_jour_graphique("polaire")).grid(row=6, column=0, columnspan=2)
+ttk.Button(fenetre, text="Tracer en Polaire", command=lambda: mettre_a_jour_graphique("polaire")).grid(row=5, column=0, columnspan=2)
 
 # Bouton pour afficher le graphique sphérique
-ttk.Button(fenetre, text="Tracer en Sphérique", command=lambda: mettre_a_jour_graphique("spherique")).grid(row=7, column=0, columnspan=2)
+ttk.Button(fenetre, text="Tracer en Sphérique", command=lambda: mettre_a_jour_graphique("spherique")).grid(row=6, column=0, columnspan=2)
 
 # Bouton pour lire depuis USB
-ttk.Button(fenetre, text="Lire depuis USB", command=lire_port_usb).grid(row=8, column=0, columnspan=2)
+ttk.Button(fenetre, text="Lire depuis USB", command=lire_port_usb).grid(row=7, column=0, columnspan=2)
 
 # Lancer l'interface
 fenetre.mainloop()
