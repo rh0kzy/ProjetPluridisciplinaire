@@ -1,3 +1,4 @@
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,7 +44,7 @@ def lire_fichier():
 # 2. Fonction pour tracer les données en coordonnées polaires
 def tracer_polaire(donnees, offset=0):
     angles = np.deg2rad(donnees['angle'])
-    rayons = donnees['rayon'] - offset - 1  # Décaler les rayons en soustrayant l'offset
+    rayons = donnees['rayon'] - offset   # Décaler les rayons en soustrayant l'offset
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     ax.plot(angles, rayons, label="Données", color='red')  # Tracer en rouge
@@ -80,35 +81,43 @@ def collecter_donnees():
             return None
         
         rayons = list(map(float, rayons_str.split(',')))
+        nombre_de_valeurs = len(rayons)
         
-        if angles_str:  # Si l'utilisateur a fourni des angles
-            angles = list(map(float, angles_str.split(',')))
-            if len(angles) != len(rayons):
-                messagebox.showerror("Erreur", "Le nombre d'angles et de rayons doit être identique.")
-                return None
-        else:  # Si seuls les rayons sont donnés
-            angles = list(range(1, len(rayons) + 1))  # Génère des angles de 1° à n°
-            messagebox.showinfo("Info", "Les angles ont été automatiquement générés de 1° à n°.")
+        # Recalculer les angles en fonction de la formule (360 / nombre_de_valeurs)
+        angles = [i * (360 / nombre_de_valeurs) for i in range(nombre_de_valeurs)]
+        
+        # Appliquer l'offset aux rayons
+        offset = float(entree_offset.get())
+        rayons = [r - offset for r in rayons]
 
         return pd.DataFrame({'angle': angles, 'rayon': rayons})
     except ValueError:
         messagebox.showerror("Erreur", "Veuillez entrer uniquement des nombres valides séparés par des virgules.")
         return None
 
-
 # 5. Fonction pour mettre à jour le graphique
 def mettre_a_jour_graphique(mode="polaire"):
     donnees = collecter_donnees()
     if donnees is not None:
-        offset = float(entree_offset.get())
-        max_offset = min(donnees['rayon'])
-        if offset > max_offset:
-            messagebox.showwarning("Avertissement", f"L'offset ne peut pas dépasser {max_offset}. Utilisation de 0 à la place.")
-            offset = 0
-        if mode == "polaire":
-            tracer_polaire(donnees, offset)
-        elif mode == "spherique":
-            tracer_spherique(donnees, offset)
+        try:
+            offset = float(entree_offset.get())
+            max_offset = min(donnees['rayon'])
+            
+            # Vérifier si l'offset est valide
+            if offset > max_offset:
+                messagebox.showwarning(
+                    "Avertissement",
+                    f"L'offset est trop élevé. Il a été ajusté à la valeur maximale autorisée : {max_offset:.2f}."
+                )
+                offset = max_offset  # Ajuster l'offset à la valeur maximale autorisée
+            
+            # Tracer le graphique en fonction du mode
+            if mode == "polaire":
+                tracer_polaire(donnees, offset)
+            elif mode == "spherique":
+                tracer_spherique(donnees, offset)
+        except ValueError:
+            messagebox.showerror("Erreur", "Veuillez entrer une valeur numérique valide pour l'offset.")
             
 # 6. Fonction pour lire les données USB
 def lire_port_usb():
