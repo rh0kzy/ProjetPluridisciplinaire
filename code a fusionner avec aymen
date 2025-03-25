@@ -100,11 +100,7 @@ def collecter_donnees():
 def mettre_a_jour_graphique(mode="polaire"):
     donnees = collecter_donnees()
     if donnees is not None:
-        offset = float(entree_offset.get())
-        max_offset = min(donnees['rayon'])
-        if offset > max_offset:
-            messagebox.showwarning("Avertissement", f"L'offset ne peut pas dépasser {max_offset}. Utilisation de 0 à la place.")
-            offset = 0
+        offset = min(donnees['rayon'])  # Calculer automatiquement l'offset comme la valeur minimale des rayons
         if mode == "polaire":
             tracer_polaire(donnees, offset)
         elif mode == "spherique":
@@ -142,26 +138,20 @@ ttk.Label(fenetre, text="Rayons :").grid(row=2, column=0)
 entree_rayons = ttk.Entry(fenetre)
 entree_rayons.grid(row=2, column=1)
 
-# Champs pour l'offset
-ttk.Label(fenetre, text="Offset :").grid(row=3, column=0)
-entree_offset = ttk.Entry(fenetre)
-entree_offset.grid(row=3, column=1)
-entree_offset.insert(0, "0")
-
 # Champs pour le port USB
-ttk.Label(fenetre, text="Port USB :").grid(row=4, column=0)
+ttk.Label(fenetre, text="Port USB :").grid(row=3, column=0)
 entree_port_usb = ttk.Entry(fenetre)
-entree_port_usb.grid(row=4, column=1)
+entree_port_usb.grid(row=3, column=1)
 entree_port_usb.insert(0, "COM3")
 
 # Bouton pour afficher le graphique polaire
-ttk.Button(fenetre, text="Tracer en Polaire", command=lambda: mettre_a_jour_graphique("polaire")).grid(row=5, column=0, columnspan=2)
+ttk.Button(fenetre, text="Tracer en Polaire", command=lambda: mettre_a_jour_graphique("polaire")).grid(row=4, column=0, columnspan=2)
 
 # Bouton pour afficher le graphique sphérique
-ttk.Button(fenetre, text="Tracer en Sphérique", command=lambda: mettre_a_jour_graphique("spherique")).grid(row=6, column=0, columnspan=2)
+ttk.Button(fenetre, text="Tracer en Sphérique", command=lambda: mettre_a_jour_graphique("spherique")).grid(row=5, column=0, columnspan=2)
 
 # Bouton pour lire depuis USB
-ttk.Button(fenetre, text="Lire depuis USB", command=lire_port_usb).grid(row=7, column=0, columnspan=2)
+ttk.Button(fenetre, text="Lire depuis USB", command=lire_port_usb).grid(row=6, column=0, columnspan=2)
 
 # Lancer l'interface
 fenetre.mainloop()
