@@ -1,102 +1,24 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import tkinter as tk
-from tkinter import ttk, messagebox
-import serial
 
-# 1. Fonction pour lire des fichiers de données texte
-def lire_fichier(chemin_fichier):
-    return pd.read_csv(chemin_fichier)
+def create_rounded_button(canvas, x, y, width, height, radius, text, command):
+    canvas.create_arc(x, y, x + 2*radius, y + 2*radius, start=90, extent=90, fill="gray", outline="gray")
+    canvas.create_arc(x + width - 2*radius, y, x + width, y + 2*radius, start=0, extent=90, fill="gray", outline="gray")
+    canvas.create_arc(x, y + height - 2*radius, x + 2*radius, y + height, start=180, extent=90, fill="gray", outline="gray")
+    canvas.create_arc(x + width - 2*radius, y + height - 2*radius, x + width, y + height, start=270, extent=90, fill="gray", outline="gray")
+    canvas.create_rectangle(x + radius, y, x + width - radius, y + height, fill="gray", outline="gray")
+    canvas.create_rectangle(x, y + radius, x + width, y + height - radius, fill="gray", outline="gray")
+    
+    button_text = canvas.create_text(x + width//2, y + height//2, text=text, fill="white", font=("Arial", 12))
+    
+    def on_click(event):
+        command()
+    
+    canvas.tag_bind(button_text, "<Button-1>", on_click)
 
-# 2. Fonction pour tracer les données en coordonnées polaires
-def tracer_polaire(donnees, offset=0, echelle=1):
-    angles = np.deg2rad(donnees['angle'])  # Convertir les angles en radians
-    rayons = donnees['rayon'] * echelle   # Appliquer l'échelle
+root = tk.Tk()
+canvas = tk.Canvas(root, width=300, height=200)
+canvas.pack()
 
-    # Créer un graphique polaire
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-    ax.plot(angles, rayons, label="Données")
+create_rounded_button(canvas, 50, 50, 150, 50, 10, "Click Me", lambda: print("Button clicked!"))
 
-    # Appliquer l'offset (décalage du centre)
-    ax.set_rorigin(-offset)
-
-    # Ajouter des labels et une légende
-    ax.set_title("Graphique Polaire avec Offset et Échelle")
-    ax.legend()
-
-    plt.show()
-
-# 3. Fonction pour collecter les données de l'utilisateur
-def collecter_donnees():
-    try:
-        angles = list(map(float, entree_angles.get().split(',')))
-        rayons = list(map(float, entree_rayons.get().split(',')))
-        
-        if len(angles) != len(rayons):
-            messagebox.showerror("Erreur", "Le nombre d'angles et de rayons doit être identique.")
-            return None
-        
-        return pd.DataFrame({'angle': angles, 'rayon': rayons})
-    except ValueError:
-        messagebox.showerror("Erreur", "Veuillez entrer des valeurs numériques valides.")
-        return None
-
-# 4. Fonction pour mettre à jour le graphique
-def mettre_a_jour_graphique():
-    donnees = collecter_donnees()
-    if donnees is not None:
-        offset = float(entree_offset.get())
-        echelle = float(entree_echelle.get())
-        tracer_polaire(donnees, offset, echelle)
-
-# 5. Fonction pour la communication USB avec pySerial
-def lire_port_usb(port, baudrate=9600):
-    try:
-        ser = serial.Serial(port, baudrate)
-        print(f"Connexion établie sur {port}")
-        while True:
-            ligne = ser.readline().decode('utf-8').strip()
-            print(f"Données reçues : {ligne}")
-    except Exception as e:
-        print(f"Erreur : {e}")
-    finally:
-        ser.close()
-
-# Interface utilisateur
-fenetre = tk.Tk()
-fenetre.title("Visualisation en Coordonnées Polaires")
-
-# Champs pour les angles
-ttk.Label(fenetre, text="Angles (degrés, séparés par des virgules) :").grid(row=0, column=0)
-entree_angles = ttk.Entry(fenetre)
-entree_angles.grid(row=0, column=1)
-entree_angles.insert(0, "0, 45, 90, 135, 180, 225, 270, 315")  # Exemple par défaut
-
-# Champs pour les rayons
-ttk.Label(fenetre, text="Rayons (séparés par des virgules) :").grid(row=1, column=0)
-entree_rayons = ttk.Entry(fenetre)
-entree_rayons.grid(row=1, column=1)
-entree_rayons.insert(0, "1, 2, 3, 4, 5, 6, 7, 8")  # Exemple par défaut
-
-# Champs pour l'offset
-ttk.Label(fenetre, text="Offset :").grid(row=2, column=0)
-entree_offset = ttk.Entry(fenetre)
-entree_offset.grid(row=2, column=1)
-entree_offset.insert(0, "0")  # Valeur par défaut
-
-# Champs pour l'échelle
-ttk.Label(fenetre, text="Échelle :").grid(row=3, column=0)
-entree_echelle = ttk.Entry(fenetre)
-entree_echelle.grid(row=3, column=1)
-entree_echelle.insert(0, "1")  # Valeur par défaut
-
-# Bouton pour mettre à jour le graphique
-bouton = ttk.Button(fenetre, text="Tracer", command=mettre_a_jour_graphique)
-bouton.grid(row=4, column=0, columnspan=2)
-
-# Lancer l'interface
-fenetre.mainloop()
-
-# Exemple de communication USB (décommentez pour tester)
-# lire_port_usb("COM3")  # Remplacez "COM3" par le port approprié
+root.mainloop()

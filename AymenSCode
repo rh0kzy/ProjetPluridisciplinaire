@@ -1,46 +1,94 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+import customtkinter as ctk
 
 # Créer la fenêtre principale
 root = tk.Tk()
-root.title("Fenêtre avec arrière-plan")
 
-# Dimensions de la fenêtre
-window_width = 1080
-window_height = 720
+# Définir la taille de la fenêtre (500x770)
+root.geometry("500x770")
 
-# Obtenir les dimensions de l'écran
+# Centrer la fenêtre sur l'écran
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-
-# Calculer la position pour centrer la fenêtre
-x = (screen_width // 2) - (window_width // 2)
-y = (screen_height // 2) - (window_height // 2)
-
-# Appliquer les dimensions et positionner la fenêtre
-root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+x = (screen_width // 2) - (500 // 2)
+y = (screen_height // 2) - (770 // 2)
+root.geometry(f"500x770+{x}+{y}")
 
 # Empêcher le redimensionnement de la fenêtre
 root.resizable(False, False)
 
-# Charger l'image de fond
-background_path = r"C:\Users\PC\Desktop\POO\ProjetPluridisciplinaire\back.jpg"
-image = Image.open(background_path)
-image = image.resize((window_width, window_height), Image.Resampling.LANCZOS)  # Remplacement de ANTIALIAS
-background_image = ImageTk.PhotoImage(image)
+# Définir la couleur de fond
+root.configure(bg="#031045")
 
-# Ajouter l'image de fond à un label
-background_label = tk.Label(root, image=background_image)
-background_label.place(relwidth=1, relheight=1)
+# Titre de la fenêtre (optionnel)
+root.title("Ma Fenêtre")
 
-# Ajouter un label avec le texte
-welcome_label = tk.Label(
-    root,
-    text="Bienvenue, veuillez choisir le type de votre tracage",
-    font=("Montserrat", 25),
-    bg="#ffffff"  # Couleur de fond blanche
-)
-welcome_label.place(x=69, y=119, width=942, height=43)
+# Ajouter un canvas pour dessiner le rectangle
+canvas = tk.Canvas(root, width=500, height=770, bg="#031045", highlightthickness=0)
+canvas.place(x=0, y=0)
+
+# Fonction pour dessiner un rectangle avec des coins arrondis
+def create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
+    # Dessiner les quatre arcs pour les coins
+    canvas.create_arc(x1, y1, x1 + 2 * radius, y1 + 2 * radius, start=90, extent=90, style="pieslice", **kwargs)
+    canvas.create_arc(x2 - 2 * radius, y1, x2, y1 + 2 * radius, start=0, extent=90, style="pieslice", **kwargs)
+    canvas.create_arc(x1, y2 - 2 * radius, x1 + 2 * radius, y2, start=180, extent=90, style="pieslice", **kwargs)
+    canvas.create_arc(x2 - 2 * radius, y2 - 2 * radius, x2, y2, start=270, extent=90, style="pieslice", **kwargs)
+
+    # Dessiner les quatre rectangles pour connecter les arcs
+    canvas.create_rectangle(x1 + radius, y1, x2 - radius, y2, **kwargs)
+    canvas.create_rectangle(x1, y1 + radius, x2, y2 - radius, **kwargs)
+
+# Dimensions et paramètres du rectangle
+rect_width = 360
+rect_height = 80
+rect_x = 70
+rect_radius = 20
+
+# Premier rectangle (en haut)
+create_rounded_rectangle(canvas, rect_x, 73, rect_x + rect_width, 73 + rect_height, radius=rect_radius, fill="white", outline="")
+canvas.create_text(rect_x + rect_width // 2, 73 + rect_height // 2, text="Charger un fichier", font=("Montserrat", 25), fill="#031045")
+
+# Deuxième rectangle
+create_rounded_rectangle(canvas, rect_x, 441, rect_x + rect_width, 441 + rect_height, radius=rect_radius, fill="white", outline="")
+canvas.create_text(rect_x + rect_width // 2, 441 + rect_height // 2, text="Tracer en Polaire", font=("Montserrat", 25), fill="#031045")
+
+# Troisième rectangle
+create_rounded_rectangle(canvas, rect_x, 551, rect_x + rect_width, 551 + rect_height, radius=rect_radius, fill="white", outline="")
+canvas.create_text(rect_x + rect_width // 2, 551 + rect_height // 2, text="Tracer en spherique", font=("Montserrat", 25), fill="#031045")
+
+# Quatrième rectangle
+create_rounded_rectangle(canvas, rect_x, 661, rect_x + rect_width, 661 + rect_height, radius=rect_radius, fill="white", outline="")
+canvas.create_text(rect_x + rect_width // 2, 661 + rect_height // 2, text="Lire depuis USB", font=("Montserrat", 25), fill="#031045")
+
+# Créer les champs de texte
+input_width = 250
+input_height = 50
+input_x = 222
+
+# Premier champ de texte
+entry1 = ctk.CTkEntry(root, 
+                      placeholder_text="", 
+                      width=input_width, 
+                      height=input_height, 
+                      font=("Montserrat", 14))
+entry1.place(x=input_x, y=189)
+
+# Deuxième champ de texte
+entry2 = ctk.CTkEntry(root, 
+                      placeholder_text="", 
+                      width=input_width, 
+                      height=input_height, 
+                      font=("Montserrat", 14))
+entry2.place(x=input_x, y=269)
+
+# Troisième champ de texte (type mot de passe)
+entry3 = ctk.CTkEntry(root, 
+                      placeholder_text="",  
+                      width=input_width, 
+                      height=input_height, 
+                      font=("Montserrat", 14))
+entry3.place(x=input_x, y=351)
 
 # Lancer la boucle principale
 root.mainloop()
