@@ -67,7 +67,9 @@ def tracer_spherique(donnees):
     ax.legend()
     plt.show()
 
-# 4. Fonction pour collecter les données de l'utilisateur
+import pandas as pd
+from tkinter import messagebox
+
 def collecter_donnees():
     try:
         angles_str = entree_angles.get().strip()
@@ -80,13 +82,20 @@ def collecter_donnees():
         rayons = list(map(float, rayons_str.split(',')))
         nombre_de_valeurs = len(rayons)
         
+        # Trouver la valeur maximale des rayons
+        val_max = max(rayons)
+        
+        # Calculer la différence entre chaque rayon et la valeur maximale
+        rayons_modifies = [r - val_max for r in rayons]
+
         # Recalculer les angles en fonction de la formule (360 / nombre_de_valeurs)
         angles = [i * (360 / nombre_de_valeurs) for i in range(nombre_de_valeurs)]
 
-        return pd.DataFrame({'angle': angles, 'rayon': rayons})
+        return pd.DataFrame({'angle': angles, 'rayon': rayons_modifies})
     except ValueError:
         messagebox.showerror("Erreur", "Veuillez entrer uniquement des nombres valides séparés par des virgules.")
-        return None
+        return None  
+
 
 # 5. Fonction pour mettre à jour le graphique
 def mettre_a_jour_graphique(mode="polaire"):
