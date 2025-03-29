@@ -10,7 +10,7 @@ from tkinter import filedialog, messagebox, Tk
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("OptiGraph")
-        MainWindow.setWindowIcon(QtGui.QIcon("C:\\Users\\Hamada Salim G Trd\\Downloads\\12067355_4884273.jpg"))
+        MainWindow.setWindowIcon(QtGui.QIcon("C:/Users/PC/Desktop/POO/ProjetPluridisciplinaire/icon.png"))
         MainWindow.resize(620, 560)
         font = QtGui.QFont()
         font.setFamily("Montserrat")
@@ -20,7 +20,7 @@ class Ui_MainWindow(object):
         # Set background image
         MainWindow.setStyleSheet("""
             QMainWindow {
-                background-image: url('C:/Users/Hamada Salim G Trd/Downloads/12067355_4884273.jpg');
+                background-image: url('C:/Users/PC/Desktop/12067355_4884273.jpg');
                 background-repeat: no-repeat;
                 background-position: center;
                 background-size: cover;
@@ -62,7 +62,7 @@ class Ui_MainWindow(object):
         self.lineEdit_4.setGeometry(QtCore.QRect(275, 180, 310, 36))
         self.lineEdit_5 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_5.setGeometry(QtCore.QRect(275, 230, 310, 36))
-          
+        
         # Labels
         self.label = QtWidgets.QLabel("Angles 📐 :", parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(85, 130, 171, 35))
@@ -100,9 +100,6 @@ class Ui_MainWindow(object):
                 messagebox.showerror("Erreur", "Veuillez entrer des rayons.")
                 return None
             rayons = list(map(float, rayons_str.split(',')))
-            val_max = max(rayons)  
-            rayons = [r - val_max for r in rayons]
-
             angles = [i * (360 / len(rayons)) for i in range(len(rayons))]
             return pd.DataFrame({'angle': angles, 'rayon': rayons})
         except ValueError:
