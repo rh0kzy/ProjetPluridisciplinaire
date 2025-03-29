@@ -53,22 +53,39 @@ def tracer_polaire(donnees):
 
 # 3. Fonction pour tracer en coordonnées sphériques
 def tracer_spherique(donnees):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    try:
+        # Convert angles to radians
+        theta = np.deg2rad(donnees['angle'].values)  # Azimuthal angle
+        phi = np.linspace(0, np.pi, len(theta))  # Elevation angle
+        r = donnees['rayon'].values  # Radii (intensity)
 
-    angles = np.deg2rad(donnees['angle'])
-    rayons = donnees['rayon']
-    x = rayons * np.cos(angles)
-    y = rayons * np.sin(angles)
-    z = np.linspace(0, len(rayons), len(rayons))
+        # Convert to Cartesian coordinates
+        X = r * np.sin(phi)[:, None] * np.cos(theta)
+        Y = r * np.sin(phi)[:, None] * np.sin(theta)
+        Z = r * np.cos(phi)[:, None]
 
-    ax.plot(x, y, z, label="Données en 3D", color='red')  # Tracer en rouge
-    ax.set_title("Graphique Sphérique avec Rayons Négatifs")
-    ax.legend()
-    plt.show()
+        # Create a 3D figure
+        fig = plt.figure(figsize=(8, 6))
+        ax = fig.add_subplot(111, projection='3d')
 
-import pandas as pd
-from tkinter import messagebox
+        # Create a surface plot with color mapping
+        surf = ax.plot_surface(X, Y, Z, cmap='jet', edgecolor='none')
+
+        # Create a color bar linked to the surface
+        fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10, label="Intensité (dBi)")
+
+        # Labels and styling
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        ax.set_title("Diagramme de Rayonnement 3D")
+
+        plt.show()
+
+    except Exception as e:
+        messagebox.showerror("Erreur", f"Erreur dans le tracé sphérique : {e}")
+
+
 
 def collecter_donnees():
     try:
@@ -167,4 +184,4 @@ ttk.Button(cadre, text="🌐 Tracer en Sphérique", command=lambda: mettre_a_jou
 ttk.Button(cadre, text="💾 Lire depuis USB", command=lire_port_usb).grid(row=6, column=0, columnspan=2, pady=10, padx=5, sticky="ew")
 
 # Lancer l'interface
-fenetre.mainloop()
+fenetre.mainloop()  
