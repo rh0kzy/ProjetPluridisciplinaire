@@ -1,4 +1,11 @@
+import sys
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import serial
 from PyQt6 import QtCore, QtGui, QtWidgets
+from mpl_toolkits.mplot3d import Axes3D
+from tkinter import filedialog, messagebox, Tk
 
 
 class Ui_MainWindow(object):
@@ -122,6 +129,74 @@ class Ui_MainWindow(object):
         self.label_2.setText(_translate("MainWindow", "Rayons 📏 :"))
         self.label_3.setText(_translate("MainWindow", "Port USB🔌;"))
 
+    def lire_fichier(self):
+        root = Tk()
+        root.withdraw()
+        chemin_fichier = filedialog.askopenfilename(filetypes=[("Fichiers texte", "*.txt"), ("Fichiers CSV", "*.csv")])
+        if not chemin_fichier:
+            return
+        try:
+            data = pd.read_csv(chemin_fichier, delimiter=';', names=['rayon'])
+            angles = np.arange(1, len(data) + 1)
+            self.lineEdit_3.setText(','.join(map(str, angles.tolist())))
+            self.lineEdit_4.setText(','.join(map(str, data['rayon'].tolist())))
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Impossible de lire le fichier : {e}")
+
+    def collecter_donnees(self):
+        try:
+            angles_str = self.lineEdit_3.text().strip()
+            rayons_str = self.lineEdit_4.text().strip()
+            if not rayons_str:
+                messagebox.showerror("Erreur", "Veuillez entrer des rayons.")
+                return None
+            rayons = list(map(float, rayons_str.split(',')))
+            angles = [i * (360 / len(rayons)) for i in range(len(rayons))]
+            return pd.DataFrame({'angle': angles, 'rayon': rayons})
+        except ValueError:
+            messagebox.showerror("Erreur", "Veuillez entrer des nombres valides.")
+            return None
+
+    def tracer_polaire(self, donnees):
+        angles = np.deg2rad(donnees['angle'])
+        rayons = donnees['rayon']
+        plt.subplot(projection='polar')
+        plt.plot(angles, rayons, 'r')
+        plt.title("Graphique Polaire")
+        plt.show()
+
+    def tracer_spherique(self, donnees):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        angles = np.deg2rad(donnees['angle'])
+        rayons = donnees['rayon']
+        x = rayons * np.cos(angles)
+        y = rayons * np.sin(angles)
+        z = np.linspace(0, len(rayons), len(rayons))
+        ax.plot(x, y, z, 'r')
+        plt.title("Graphique Sphérique")
+        plt.show()
+
+    def mettre_a_jour_graphique(self, mode):
+        donnees = self.collecter_donnees()
+        if donnees is not None:
+            if mode == "polaire":
+                self.tracer_polaire(donnees)
+            elif mode == "spherique":
+                self.tracer_spherique(donnees)
+
+    def lire_port_usb(self):
+        port = self.lineEdit_5.text()
+        baudrate = 9600
+        try:
+            ser = serial.Serial(port, baudrate)
+            while True:
+                ligne = ser.readline().decode('utf-8').strip()
+                print(f"Données reçues : {ligne}")
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Problème avec le port USB : {e}")
+        finally:
+            ser.close()
 
 if __name__ == "__main__":
     import sys
