@@ -17,16 +17,6 @@ class Ui_MainWindow(object):
         font.setPointSize(20)
         MainWindow.setFont(font)
 
-        # Set background image
-        MainWindow.setStyleSheet("""
-            QMainWindow {
-                background-image: url('C:/Users/PC/Desktop/12067355_4884273.jpg');
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: cover;
-            }
-        """)
-
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
@@ -64,7 +54,7 @@ class Ui_MainWindow(object):
         self.lineEdit_5.setGeometry(QtCore.QRect(275, 230, 310, 36))
         
         # Labels
-        self.label = QtWidgets.QLabel("Angles 📐 :", parent=self.centralwidget)
+        self.label = QtWidgets.QLabel("Angles  📐 :", parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(85, 130, 171, 35))
         self.label.setFont(font)
         
