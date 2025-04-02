@@ -9,8 +9,7 @@ class Ui_MainWindow(object):
         font.setFamily("Montserrat")
         font.setPointSize(20)
         MainWindow.setFont(font)
-        MainWindow.setStyleSheet("background-color: #031045;\n"
-"")
+        MainWindow.setStyleSheet("background-color: #031045;\n""")
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.Charger = QtWidgets.QPushButton(parent=self.centralwidget)
