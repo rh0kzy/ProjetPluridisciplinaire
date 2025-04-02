@@ -35,6 +35,7 @@ class Ui_MainWindow(object):
         font.setPointSize(20)
         font.setBold(False)
         self.pushButton.setFont(font)
+        self.Charger.clicked.connect(self.lire_fichier)
         self.pushButton.setStyleSheet("color: #031045;\n"
 "background-color: white;")
         self.pushButton.setObjectName("pushButton")
@@ -45,6 +46,7 @@ class Ui_MainWindow(object):
         font.setPointSize(20)
         font.setBold(False)
         self.pushButton_2.setFont(font)
+        self.pushButton.clicked.connect(lambda: self.mettre_a_jour_graphique("polaire"))
         self.pushButton_2.setStyleSheet("color: #031045;\n"
 "background-color: white;\n"
 "")
@@ -55,6 +57,7 @@ class Ui_MainWindow(object):
         font.setFamily("Montserrat")
         font.setPointSize(20)
         self.pushButton_3.setFont(font)
+        self.pushButton_2.clicked.connect(lambda: self.mettre_a_jour_graphique("spherique"))
         self.pushButton_3.setStyleSheet("color: #031045;\n"
 "background-color: white;\n"
 "")
@@ -74,6 +77,7 @@ class Ui_MainWindow(object):
         font.setFamily("Montserrat")
         font.setPointSize(20)
         self.label.setFont(font)
+        self.pushButton_3.clicked.connect(self.lire_port_usb)
         self.label.setObjectName("label")
         self.label_2 = QtWidgets.QLabel(parent=self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(85, 180, 171, 35))
