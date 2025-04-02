@@ -59,14 +59,17 @@ class Ui_MainWindow(object):
         self.label = QtWidgets.QLabel("Angles  📐 :", parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(85, 130, 171, 35))
         self.label.setFont(font)
+        self.label.setStyleSheet("color: white;")  # Set text color to white
         
         self.label_2 = QtWidgets.QLabel("Rayons 📏 :", parent=self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(85, 180, 171, 35))
         self.label_2.setFont(font)
+        self.label.setStyleSheet("color: white;")  # Set text color to white
         
         self.label_3 = QtWidgets.QLabel("Port USB 🔌:", parent=self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(90, 240, 181, 25))
         self.label_3.setFont(font)
+        self.label.setStyleSheet("color: white;")  # Set text color to white
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle("MainWindow")
