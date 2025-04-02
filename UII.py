@@ -98,6 +98,8 @@ class Ui_MainWindow(object):
                 messagebox.showerror("Erreur", "Veuillez entrer des rayons.")
                 return None
             rayons = list(map(float, rayons_str.split(',')))
+            val_max = max(rayons)  
+            rayons = [r - val_max for r in rayons]
             angles = [i * (360 / len(rayons)) for i in range(len(rayons))]
             return pd.DataFrame({'angle': angles, 'rayon': rayons})
         except ValueError:
