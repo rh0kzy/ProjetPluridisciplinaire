@@ -46,10 +46,13 @@ class Ui_MainWindow(object):
         
         self.lineEdit_3 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_3.setGeometry(QtCore.QRect(275, 130, 310, 36))
+        self.lineEdit_3.setStyleSheet("color: white; background-color: #031045;")  # Set text color to white
         self.lineEdit_4 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_4.setGeometry(QtCore.QRect(275, 180, 310, 36))
+        self.lineEdit_4.setStyleSheet("color: white; background-color: #031045;")  # Set text color to white
         self.lineEdit_5 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_5.setGeometry(QtCore.QRect(275, 230, 310, 36))
+        self.lineEdit_5.setStyleSheet("color: white; background-color: #031045;")  # Set text color to white
         
         MainWindow.setCentralWidget(self.centralwidget)
         self.retranslateUi(MainWindow)
