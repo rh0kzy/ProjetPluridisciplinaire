@@ -85,5 +85,5 @@ This project is **private**. No external contributions are accepted.
 
 ### ✨ Author
 **Aymen Belkadi**  
-📧 Contact: [your email or GitHub profile]
+📧 Contact: [@rh0kzy]
 
