@@ -70,7 +70,7 @@ class Ui_MainWindow(object):
         self.label_2.setStyleSheet("color: white;")  # Set text color to white
         
         self.label_3 = QtWidgets.QLabel("Port USB 🔌:", parent=self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(90, 240, 181, 25))
+        self.label_3.setGeometry(QtCore.QRect(85, 235, 181, 25))
         self.label_3.setFont(font)
         self.label_3.setStyleSheet("color: white;")  # Set text color to white
 
