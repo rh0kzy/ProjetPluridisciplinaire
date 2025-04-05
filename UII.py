@@ -76,20 +76,22 @@ class Ui_MainWindow(object):
         self.lineEdit_5.setGeometry(QtCore.QRect(275, 230, 310, 36))
         self.lineEdit_5.setStyleSheet("color: white; background-color: #031045;")
 
+        bold_font = QtGui.QFont(font)
+        bold_font.setBold(True)
         # Labels
         self.label = QtWidgets.QLabel("Angles  📐 :", parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(85, 130, 171, 35))
-        self.label.setFont(font)
+        self.label.setFont(bold_font)
         self.label.setStyleSheet("color: white;background-color: transparent;")
 
         self.label_2 = QtWidgets.QLabel("Rayons 📏 :", parent=self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(85, 180, 171, 35))
-        self.label_2.setFont(font)
+        self.label_2.setFont(bold_font)
         self.label_2.setStyleSheet("color: white;background-color: transparent;")
 
         self.label_3 = QtWidgets.QLabel("Port USB 🔌:", parent=self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(90, 240, 181, 25))
-        self.label_3.setFont(font)
+        self.label_3.setGeometry(QtCore.QRect(85, 235, 181, 25))
+        self.label_3.setFont(bold_font)
         self.label_3.setStyleSheet("color: white;background-color: transparent;")
 
         MainWindow.setCentralWidget(self.centralwidget)
