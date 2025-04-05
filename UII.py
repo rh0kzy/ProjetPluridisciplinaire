@@ -16,63 +16,86 @@ class Ui_MainWindow(object):
         font.setFamily("Montserrat")
         font.setPointSize(20)
         MainWindow.setFont(font)
-        MainWindow.setStyleSheet("background-color: #031045;")
+        MainWindow.setStyleSheet("background-color: #031045;display:flex;justify-content:center;align-items:center;")
+
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        
+
+        # Appliquer une image de fond uniquement au centralwidget
+        self.centralwidget.setStyleSheet("""
+            QWidget#centralwidget {
+                border-image: url('./background.jpg') 0 0 0 0 stretch stretch;
+            }
+        """)
+
+        self.main_layout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.main_layout.setContentsMargins(80, 40, 80, 40)
+        self.main_layout.setSpacing(15)
+        self.main_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
+
+
+        # Bouton : Charger un fichier
         self.Charger = QtWidgets.QPushButton("Charger un fichier 📂", parent=self.centralwidget)
         self.Charger.setGeometry(QtCore.QRect(87, 53, 446, 58))
         self.Charger.setFont(font)
         self.Charger.setStyleSheet("background-color: white; color: #031045;")
         self.Charger.clicked.connect(self.lire_fichier)
-        
+
+        # Bouton : Tracer en polaire
         self.pushButton = QtWidgets.QPushButton("Tracer en polaire 📊", parent=self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(87, 290, 446, 56))
         self.pushButton.setFont(font)
         self.pushButton.setStyleSheet("background-color: white; color: #031045;")
         self.pushButton.clicked.connect(lambda: self.mettre_a_jour_graphique("polaire"))
-        
+
+        # Bouton : Tracer en sphérique
         self.pushButton_2 = QtWidgets.QPushButton("Tracer en sphérique 🌐", parent=self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(87, 360, 446, 58))
         self.pushButton_2.setFont(font)
         self.pushButton_2.setStyleSheet("background-color: white; color: #031045;")
         self.pushButton_2.clicked.connect(lambda: self.mettre_a_jour_graphique("spherique"))
-        
+
+        # Bouton : Lire depuis USB
         self.pushButton_3 = QtWidgets.QPushButton("Lire depuis USB 💾", parent=self.centralwidget)
         self.pushButton_3.setGeometry(QtCore.QRect(87, 430, 446, 58))
         self.pushButton_3.setFont(font)
         self.pushButton_3.setStyleSheet("background-color: white; color: #031045;")
         self.pushButton_3.clicked.connect(self.lire_port_usb)
-        
+
+        # Champs de texte
         self.lineEdit_3 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_3.setGeometry(QtCore.QRect(275, 130, 310, 36))
-        self.lineEdit_3.setStyleSheet("color: white; background-color: #031045;")  # Set text color to white
+        self.lineEdit_3.setStyleSheet("color: white; background-color: #031045;")
+
         self.lineEdit_4 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_4.setGeometry(QtCore.QRect(275, 180, 310, 36))
-        self.lineEdit_4.setStyleSheet("color: white; background-color: #031045;")  # Set text color to white
+        self.lineEdit_4.setStyleSheet("color: white; background-color: #031045;")
+
         self.lineEdit_5 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_5.setGeometry(QtCore.QRect(275, 230, 310, 36))
-        self.lineEdit_5.setStyleSheet("color: white; background-color: #031045;")  # Set text color to white
-        
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        
-         # Labels
+        self.lineEdit_5.setStyleSheet("color: white; background-color: #031045;")
+
+        # Labels
         self.label = QtWidgets.QLabel("Angles  📐 :", parent=self.centralwidget)
         self.label.setGeometry(QtCore.QRect(85, 130, 171, 35))
         self.label.setFont(font)
-        self.label.setStyleSheet("color: white;")  # Set text color to white
-        
+        self.label.setStyleSheet("color: white;background-color: transparent;")
+
         self.label_2 = QtWidgets.QLabel("Rayons 📏 :", parent=self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(85, 180, 171, 35))
         self.label_2.setFont(font)
-        self.label_2.setStyleSheet("color: white;")  # Set text color to white
-        
+        self.label_2.setStyleSheet("color: white;background-color: transparent;")
+
         self.label_3 = QtWidgets.QLabel("Port USB 🔌:", parent=self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(85, 235, 181, 25))
+        self.label_3.setGeometry(QtCore.QRect(90, 240, 181, 25))
         self.label_3.setFont(font)
-        self.label_3.setStyleSheet("color: white;")  # Set text color to white
+        self.label_3.setStyleSheet("color: white;background-color: transparent;")
+
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle("MainWindow")
@@ -152,8 +175,7 @@ class Ui_MainWindow(object):
                 print(f"Données reçues : {ligne}")
         except Exception as e:
             messagebox.showerror("Erreur", f"Problème avec le port USB : {e}")
-        finally:
-            ser.close()
+        
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
