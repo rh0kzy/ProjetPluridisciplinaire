@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import serial
 import serial.tools.list_ports
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox, QFileDialog
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -205,7 +205,7 @@ class Ui_MainWindow(object):
         self.sphere_btn.setFont(font)
         self.sphere_btn.clicked.connect(lambda: self.mettre_a_jour_graphique("spherique"))
         self.viz_layout.addWidget(self.sphere_btn)
-
+        
         self.main_layout.addWidget(self.viz_group)
 
         # Barre d'état
@@ -220,44 +220,79 @@ class Ui_MainWindow(object):
         
         # Initialiser la liste des ports
         self.actualiser_ports_serie()
+        
+        # Variable pour stocker les données
+        self.donnees = None
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle("Analyse de Diagramme de Rayonnement")
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "Analyse de Diagramme de Rayonnement"))
 
     def actualiser_ports_serie(self):
-        """Actualiser la liste des ports série disponibles"""
+        """Met à jour la liste des ports série disponibles"""
         self.port_combo.clear()
         ports = serial.tools.list_ports.comports()
-        
-        if not ports:
-            self.port_combo.addItem("Aucun port trouvé")
-            self.status_bar.showMessage("Aucun port USB détecté", 3000)
-        else:
-            for port, desc, hwid in sorted(ports):
-                self.port_combo.addItem(f"{port}: {desc}", port)
-            self.status_bar.showMessage(f"{len(ports)} ports USB trouvés", 3000)
-
+        for port in ports:
+            self.port_combo.addItem(port.device)
+            
     def lire_fichier(self):
-        file_dialog = QtWidgets.QFileDialog()
-        file_dialog.setNameFilter("Fichiers texte (*.txt *.csv)")
-        if file_dialog.exec():
-            chemin_fichier = file_dialog.selectedFiles()[0]
-            if not chemin_fichier:
-                return
+        """Ouvre une boîte de dialogue pour charger un fichier de données"""
+        options = QFileDialog.Option(0)
+        file_name, _ = QFileDialog.getOpenFileName(
+         None, "Choisir un fichier", "", 
+            "Fichiers de données (*.csv *.txt);;Tous les fichiers (*)", 
+            options=options
+)
+        if file_name:
             try:
-                # Lire le fichier
-                with open(chemin_fichier, 'r') as f:
-                    content = f.read().strip()
-                    # Gérer les séparateurs
-                    rayons = [float(x) for x in content.replace('\n', ',').split(',') if x.strip()]
+                # Lire le fichier CSV
+                df = pd.read_csv(file_name)
                 
-                self.radii_input.setText(','.join(map(str, rayons)))
-                QMessageBox.information(self.centralwidget, "Succès", 
-                                      f"{len(rayons)} valeurs chargées avec succès!")
-                
+                # Vérifier les colonnes nécessaires
+                if 'rayon' in df.columns:
+                    self.radii_input.setText(','.join(map(str, df['rayon'].values)))
+                    self.donnees = self.collecter_donnees()
+                    self.status_bar.showMessage(f"Fichier {file_name} chargé avec succès", 3000)
+                else:
+                    QMessageBox.critical(self.centralwidget, "Erreur", 
+                                       "Le fichier doit contenir une colonne 'rayon'")
             except Exception as e:
                 QMessageBox.critical(self.centralwidget, "Erreur", 
-                                   f"Erreur de lecture: {str(e)}\nAssurez-vous que le fichier contient uniquement des nombres séparés par des virgules.")
+                                    f"Impossible de lire le fichier: {str(e)}")
+                
+    def lire_port_serie(self):
+        """Lit les données depuis le port série sélectionné"""
+        port = self.port_combo.currentText()
+        if not port:
+            QMessageBox.critical(self.centralwidget, "Erreur", "Aucun port sélectionné")
+            return
+            
+        try:
+            with serial.Serial(port, 9600, timeout=1) as ser:
+                # Lire les données (adaptez selon votre protocole)
+                data = ser.readline().decode('utf-8').strip()
+                if data:
+                    self.radii_input.setText(data)
+                    self.donnees = self.collecter_donnees()
+                    self.status_bar.showMessage(f"Données reçues du port {port}", 3000)
+                else:
+                    QMessageBox.warning(self.centralwidget, "Avertissement", 
+                                      "Aucune donnée reçue du port série")
+        except Exception as e:
+            QMessageBox.critical(self.centralwidget, "Erreur", 
+                               f"Erreur de communication série: {str(e)}")
+            
+    def mettre_a_jour_graphique(self, type_graph):
+        """Affiche le graphique selon le type demandé"""
+        if self.donnees is None:
+            self.donnees = self.collecter_donnees()
+            if self.donnees is None:
+                return
+                
+        if type_graph == "polaire":
+            self.tracer_polaire(self.donnees)
+        elif type_graph == "spherique":
+            self.tracer_spherique(self.donnees)
 
     def collecter_donnees(self):
         try:
@@ -268,19 +303,16 @@ class Ui_MainWindow(object):
             
             # Convertir en liste de floats
             rayons = list(map(float, rayons_str.split(',')))
-            
-            # Normalisation des données
             rayons = np.array(rayons)
-            min_val = np.min(rayons)
-            max_val = np.max(rayons)
             
-            # Option 1: Conserver l'échelle mais commencer à 0
-            rayons = rayons - min_val
+            # Normalisation: valeurs - max
+            max_val = np.max(rayons)
+            rayons_normalises = rayons - max_val
             
             # Générer les angles
             angles = np.linspace(0, 360, len(rayons), endpoint=False)
             
-            return pd.DataFrame({'angle': angles, 'rayon': rayons})
+            return pd.DataFrame({'angle': angles, 'rayon': rayons_normalises})
             
         except ValueError:
             QMessageBox.critical(self.centralwidget, "Erreur", 
@@ -296,42 +328,21 @@ class Ui_MainWindow(object):
             angles = np.deg2rad(donnees['angle'])
             rayons = donnees['rayon']
             
-            # Tracé principal sans marqueurs
             ax.plot(angles, rayons, 
                    color=self.accent_color,
-                   linewidth=3,
-                   label='Données')
+                   linewidth=3)
             
-            # Personnalisation
-            ax.set_title("Diagramme Polaire\nAnalyse de Rayonnement", 
+            ax.set_title("Diagramme Polaire Normalisé\n(Valeurs - Max)", 
                         fontsize=18, 
                         fontweight='bold', 
-                        pad=20,
-                        color=self.primary_color)
+                        pad=20)
             
-            # Grille et axes
-            ax.grid(True, linestyle='--', alpha=0.7, color='gray')
-            ax.set_thetagrids(np.arange(0, 360, 45), 
-                           labels=np.arange(0, 360, 45),
-                           fontsize=12)
+            ax.grid(True, linestyle='--', alpha=0.7)
             
-            # Graduations radiales
-            r_ticks = np.linspace(0, np.max(rayons), 5)
+            # Ajustement des ticks pour valeurs normalisées
+            r_ticks = np.linspace(np.min(rayons), 0, 5)
             ax.set_rticks(r_ticks)
-            ax.set_yticklabels([f"{tick:.1f}" for tick in r_ticks], 
-                             fontsize=10,
-                             color='gray')
-            
-            # Légende
-            ax.legend(loc='upper right', bbox_to_anchor=(1.15, 1.15),
-                     frameon=True, shadow=True, facecolor='white')
-            
-            # Barre de couleur
-            sm = plt.cm.ScalarMappable(cmap=plt.cm.viridis, 
-                                     norm=plt.Normalize(vmin=np.min(rayons), vmax=np.max(rayons)))
-            sm.set_array([])
-            cbar = plt.colorbar(sm, ax=ax, pad=0.1)
-            cbar.set_label('Intensité', rotation=270, labelpad=20)
+            ax.set_yticklabels([f"{tick:.1f}" for tick in r_ticks])
             
             plt.tight_layout()
             plt.show()
@@ -348,11 +359,9 @@ class Ui_MainWindow(object):
             phi = np.linspace(0, np.pi, len(theta))
             r = donnees['rayon'].values
             
-            # Coordonnées sphériques
             theta_grid, phi_grid = np.meshgrid(theta, phi)
             r_grid = np.tile(r, (len(phi), 1))
             
-            # Conversion en coordonnées cartésiennes
             X = r_grid * np.sin(phi_grid) * np.cos(theta_grid)
             Y = r_grid * np.sin(phi_grid) * np.sin(theta_grid)
             Z = r_grid * np.cos(phi_grid)
@@ -360,87 +369,32 @@ class Ui_MainWindow(object):
             fig = plt.figure(figsize=(12, 10))
             ax = fig.add_subplot(111, projection='3d')
             
-            # Surface 3D
+            # Normalisation des couleurs
+            norm = plt.Normalize(np.min(r), 0)
+            
             surf = ax.plot_surface(X, Y, Z, 
-                                 cmap='viridis',
+                                 cmap='rainbow',
+                                 norm=norm,
                                  edgecolor='none',
-                                 alpha=0.8,
-                                 rstride=1,
-                                 cstride=1)
+                                 alpha=0.8)
             
-            # Barre de couleur
             cbar = fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10)
-            cbar.set_label('Intensité', rotation=270, labelpad=20)
+            cbar.set_label('Intensité Normalisée', rotation=270, labelpad=20)
             
-            # Labels
-            ax.set_xlabel("X", fontsize=12, labelpad=10)
-            ax.set_ylabel("Y", fontsize=12, labelpad=10)
-            ax.set_zlabel("Z", fontsize=12, labelpad=10)
-            ax.set_title("Diagramme de Rayonnement 3D", 
+            ax.set_xlabel("X", fontsize=12)
+            ax.set_ylabel("Y", fontsize=12)
+            ax.set_zlabel("Z", fontsize=12)
+            ax.set_title("Diagramme 3D Normalisé\n(Valeurs - Max)", 
                         fontsize=18, 
-                        fontweight='bold',
-                        pad=20,
-                        color=self.primary_color)
+                        fontweight='bold')
             
-            # Angle de vue
             ax.view_init(elev=30, azim=45)
-            
             plt.tight_layout()
             plt.show()
             
         except Exception as e:
             QMessageBox.critical(self.centralwidget, "Erreur", f"Erreur dans le tracé sphérique : {str(e)}")
             self.status_bar.showMessage("Erreur lors du tracé sphérique", 3000)
-            
-    def mettre_a_jour_graphique(self, mode):
-        donnees = self.collecter_donnees()
-        if donnees is not None:
-            if mode == "polaire":
-                self.tracer_polaire(donnees)
-            elif mode == "spherique":
-                self.tracer_spherique(donnees)
-            self.status_bar.showMessage("Graphique généré avec succès", 3000)
-                
-    def lire_port_serie(self):
-        if self.port_combo.currentData() is None:
-            QMessageBox.critical(self.centralwidget, "Erreur", "Aucun port USB sélectionné!")
-            self.status_bar.showMessage("Aucun port sélectionné", 3000)
-            return
-            
-        port = self.port_combo.currentData()
-        baudrate = 9600
-        
-        try:
-            with serial.Serial(port, baudrate, timeout=1) as ser:
-                QMessageBox.information(self.centralwidget, "Succès", f"Connecté au port {port}")
-                self.status_bar.showMessage(f"Lecture en cours depuis {port}...", 3000)
-                
-                data_points = []
-                start_time = QtCore.QDateTime.currentDateTime()
-                
-                while QtCore.QDateTime.currentDateTime().secsTo(start_time) < 5:
-                    if ser.in_waiting:
-                        line = ser.readline().decode('utf-8').strip()
-                        if line:
-                            try:
-                                value = float(line)
-                                data_points.append(value)
-                                self.status_bar.showMessage(f"Valeur lue: {value}", 1000)
-                            except ValueError:
-                                continue
-                
-                if data_points:
-                    self.radii_input.setText(','.join(map(str, data_points)))
-                    self.status_bar.showMessage(f"{len(data_points)} valeurs lues depuis {port}", 5000)
-                else:
-                    self.status_bar.showMessage("Aucune donnée reçue", 3000)
-                    
-        except serial.SerialException as e:
-            QMessageBox.critical(self.centralwidget, "Erreur", f"Problème avec le port USB : {str(e)}")
-            self.status_bar.showMessage("Erreur de communication USB", 3000)
-        except Exception as e:
-            QMessageBox.critical(self.centralwidget, "Erreur", f"Erreur inattendue : {str(e)}")
-            self.status_bar.showMessage("Erreur inattendue", 3000)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
