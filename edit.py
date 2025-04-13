@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
         font.setFamily("Montserrat")
         font.setPointSize(12)
 
-        # Main color palette
+        # Palette de couleurs
         self.primary_color = "#031045"
         self.secondary_color = "#4ECDC4"
         self.accent_color = "#FF6B6B"
@@ -69,7 +69,7 @@ class Ui_MainWindow(object):
         self.main_layout.setContentsMargins(40, 30, 40, 30)
         self.main_layout.setSpacing(20)
 
-        # Header
+        # En-tête
         self.header = QtWidgets.QHBoxLayout()
         self.title_label = QtWidgets.QLabel("Analyse de Diagramme de Rayonnement")
         title_font = QtGui.QFont(font)
@@ -81,7 +81,7 @@ class Ui_MainWindow(object):
         self.header.addStretch()
         self.main_layout.addLayout(self.header)
 
-        # File input section
+        # Section fichier
         self.file_group = QtWidgets.QGroupBox("Entrée des Données")
         self.file_group.setFont(font)
         self.file_group.setStyleSheet(f"""
@@ -100,13 +100,13 @@ class Ui_MainWindow(object):
         
         self.file_layout = QtWidgets.QVBoxLayout(self.file_group)
         
-        # Load file button
+        # Bouton charger fichier
         self.load_file_btn = QtWidgets.QPushButton("Charger un fichier 📂")
         self.load_file_btn.setFont(font)
         self.load_file_btn.clicked.connect(self.lire_fichier)
         self.file_layout.addWidget(self.load_file_btn)
 
-        # Radii input
+        # Champ de saisie
         self.radii_layout = QtWidgets.QHBoxLayout()
         self.radii_label = QtWidgets.QLabel("Rayons 📏:")
         self.radii_label.setFont(font)
@@ -119,7 +119,7 @@ class Ui_MainWindow(object):
         self.radii_layout.addWidget(self.radii_input)
         self.file_layout.addLayout(self.radii_layout)
 
-        # Angles info
+        # Info angles
         self.angles_info = QtWidgets.QLabel("*Les angles sont générés automatiquement selon le nombre de rayons")
         info_font = QtGui.QFont(font)
         info_font.setPointSize(10)
@@ -130,7 +130,7 @@ class Ui_MainWindow(object):
 
         self.main_layout.addWidget(self.file_group)
 
-        # USB section
+        # Section USB
         self.usb_group = QtWidgets.QGroupBox("Connexion USB")
         self.usb_group.setFont(font)
         self.usb_group.setStyleSheet(f"""
@@ -149,7 +149,7 @@ class Ui_MainWindow(object):
         
         self.usb_layout = QtWidgets.QVBoxLayout(self.usb_group)
         
-        # Port selection
+        # Sélection port
         self.port_layout = QtWidgets.QHBoxLayout()
         self.port_label = QtWidgets.QLabel("Port USB 🔌:")
         self.port_label.setFont(font)
@@ -163,19 +163,19 @@ class Ui_MainWindow(object):
         self.refresh_btn = QtWidgets.QPushButton("🔄")
         self.refresh_btn.setFixedSize(40, 40)
         self.refresh_btn.setToolTip("Rafraîchir la liste des ports")
-        self.refresh_btn.clicked.connect(self.refresh_serial_ports)
+        self.refresh_btn.clicked.connect(self.actualiser_ports_serie)
         self.port_layout.addWidget(self.refresh_btn)
         self.usb_layout.addLayout(self.port_layout)
 
-        # Read USB button
+        # Bouton lecture USB
         self.read_usb_btn = QtWidgets.QPushButton("Lire depuis USB 💾")
         self.read_usb_btn.setFont(font)
-        self.read_usb_btn.clicked.connect(self.lire_port_usb)
+        self.read_usb_btn.clicked.connect(self.lire_port_serie)
         self.usb_layout.addWidget(self.read_usb_btn)
 
         self.main_layout.addWidget(self.usb_group)
 
-        # Visualization section
+        # Section visualisation
         self.viz_group = QtWidgets.QGroupBox("Visualisation")
         self.viz_group.setFont(font)
         self.viz_group.setStyleSheet(f"""
@@ -194,13 +194,13 @@ class Ui_MainWindow(object):
         
         self.viz_layout = QtWidgets.QHBoxLayout(self.viz_group)
         
-        # Polar plot button
+        # Bouton polaire
         self.polar_btn = QtWidgets.QPushButton("Tracer en polaire 📊")
         self.polar_btn.setFont(font)
         self.polar_btn.clicked.connect(lambda: self.mettre_a_jour_graphique("polaire"))
         self.viz_layout.addWidget(self.polar_btn)
         
-        # Spherical plot button
+        # Bouton sphérique
         self.sphere_btn = QtWidgets.QPushButton("Tracer en sphérique 🌐")
         self.sphere_btn.setFont(font)
         self.sphere_btn.clicked.connect(lambda: self.mettre_a_jour_graphique("spherique"))
@@ -208,7 +208,7 @@ class Ui_MainWindow(object):
 
         self.main_layout.addWidget(self.viz_group)
 
-        # Status bar
+        # Barre d'état
         self.status_bar = QtWidgets.QStatusBar()
         self.status_bar.setFont(font)
         self.status_bar.setStyleSheet(f"color: {self.text_color};")
@@ -218,14 +218,14 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
-        # Initialize serial ports list
-        self.refresh_serial_ports()
+        # Initialiser la liste des ports
+        self.actualiser_ports_serie()
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle("Analyse de Diagramme de Rayonnement")
 
-    def refresh_serial_ports(self):
-        """Refresh the list of available serial ports"""
+    def actualiser_ports_serie(self):
+        """Actualiser la liste des ports série disponibles"""
         self.port_combo.clear()
         ports = serial.tools.list_ports.comports()
         
@@ -245,10 +245,10 @@ class Ui_MainWindow(object):
             if not chemin_fichier:
                 return
             try:
-                # Lire le fichier en traitant chaque ligne comme un rayon
+                # Lire le fichier
                 with open(chemin_fichier, 'r') as f:
                     content = f.read().strip()
-                    # Gérer les séparateurs par virgules ou sauts de ligne
+                    # Gérer les séparateurs
                     rayons = [float(x) for x in content.replace('\n', ',').split(',') if x.strip()]
                 
                 self.radii_input.setText(','.join(map(str, rayons)))
@@ -269,19 +269,15 @@ class Ui_MainWindow(object):
             # Convertir en liste de floats
             rayons = list(map(float, rayons_str.split(',')))
             
-            # Normalisation des données (entre 0 et 1)
+            # Normalisation des données
             rayons = np.array(rayons)
             min_val = np.min(rayons)
             max_val = np.max(rayons)
             
-            # Option 1: Conserver l'échelle originale mais commencer à 0
+            # Option 1: Conserver l'échelle mais commencer à 0
             rayons = rayons - min_val
             
-            # Option 2: Normaliser entre 0 et 1 (commenté)
-            # if max_val != min_val:
-            #     rayons = (rayons - min_val) / (max_val - min_val)
-            
-            # Générer les angles uniformément répartis
+            # Générer les angles
             angles = np.linspace(0, 360, len(rayons), endpoint=False)
             
             return pd.DataFrame({'angle': angles, 'rayon': rayons})
@@ -300,49 +296,37 @@ class Ui_MainWindow(object):
             angles = np.deg2rad(donnees['angle'])
             rayons = donnees['rayon']
             
-            # Create a color gradient based on radius values
-            colors = plt.cm.viridis((rayons - np.min(rayons)) / (np.max(rayons) - np.min(rayons)))
-            
-            for i in range(len(angles)):
-                ax.plot([angles[i], angles[i]], [0, rayons[i]], 
-                       color=colors[i], linewidth=2, alpha=0.7)
-            
-            # Main line plot
+            # Tracé principal sans marqueurs
             ax.plot(angles, rayons, 
                    color=self.accent_color,
                    linewidth=3,
-                   marker='o',
-                   markersize=10,
-                   markerfacecolor=self.secondary_color,
-                   markeredgecolor='white',
-                   markeredgewidth=2,
                    label='Données')
             
-            # Customize the plot
+            # Personnalisation
             ax.set_title("Diagramme Polaire\nAnalyse de Rayonnement", 
                         fontsize=18, 
                         fontweight='bold', 
                         pad=20,
                         color=self.primary_color)
             
-            # Grid and ticks
+            # Grille et axes
             ax.grid(True, linestyle='--', alpha=0.7, color='gray')
             ax.set_thetagrids(np.arange(0, 360, 45), 
                            labels=np.arange(0, 360, 45),
                            fontsize=12)
             
-            # Radial ticks
+            # Graduations radiales
             r_ticks = np.linspace(0, np.max(rayons), 5)
             ax.set_rticks(r_ticks)
             ax.set_yticklabels([f"{tick:.1f}" for tick in r_ticks], 
                              fontsize=10,
                              color='gray')
             
-            # Legend
+            # Légende
             ax.legend(loc='upper right', bbox_to_anchor=(1.15, 1.15),
                      frameon=True, shadow=True, facecolor='white')
             
-            # Add colorbar
+            # Barre de couleur
             sm = plt.cm.ScalarMappable(cmap=plt.cm.viridis, 
                                      norm=plt.Normalize(vmin=np.min(rayons), vmax=np.max(rayons)))
             sm.set_array([])
@@ -364,11 +348,11 @@ class Ui_MainWindow(object):
             phi = np.linspace(0, np.pi, len(theta))
             r = donnees['rayon'].values
             
-            # Create spherical coordinates
+            # Coordonnées sphériques
             theta_grid, phi_grid = np.meshgrid(theta, phi)
             r_grid = np.tile(r, (len(phi), 1))
             
-            # Convert to Cartesian coordinates
+            # Conversion en coordonnées cartésiennes
             X = r_grid * np.sin(phi_grid) * np.cos(theta_grid)
             Y = r_grid * np.sin(phi_grid) * np.sin(theta_grid)
             Z = r_grid * np.cos(phi_grid)
@@ -376,7 +360,7 @@ class Ui_MainWindow(object):
             fig = plt.figure(figsize=(12, 10))
             ax = fig.add_subplot(111, projection='3d')
             
-            # Create surface plot with color mapping
+            # Surface 3D
             surf = ax.plot_surface(X, Y, Z, 
                                  cmap='viridis',
                                  edgecolor='none',
@@ -384,11 +368,11 @@ class Ui_MainWindow(object):
                                  rstride=1,
                                  cstride=1)
             
-            # Add colorbar
+            # Barre de couleur
             cbar = fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10)
             cbar.set_label('Intensité', rotation=270, labelpad=20)
             
-            # Labels and title
+            # Labels
             ax.set_xlabel("X", fontsize=12, labelpad=10)
             ax.set_ylabel("Y", fontsize=12, labelpad=10)
             ax.set_zlabel("Z", fontsize=12, labelpad=10)
@@ -398,7 +382,7 @@ class Ui_MainWindow(object):
                         pad=20,
                         color=self.primary_color)
             
-            # Adjust view angle
+            # Angle de vue
             ax.view_init(elev=30, azim=45)
             
             plt.tight_layout()
@@ -417,7 +401,7 @@ class Ui_MainWindow(object):
                 self.tracer_spherique(donnees)
             self.status_bar.showMessage("Graphique généré avec succès", 3000)
                 
-    def lire_port_usb(self):
+    def lire_port_serie(self):
         if self.port_combo.currentData() is None:
             QMessageBox.critical(self.centralwidget, "Erreur", "Aucun port USB sélectionné!")
             self.status_bar.showMessage("Aucun port sélectionné", 3000)
@@ -461,7 +445,7 @@ class Ui_MainWindow(object):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     
-    # Set application style and palette
+    # Style de l'application
     app.setStyle('Fusion')
     palette = QtGui.QPalette()
     palette.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(3, 16, 69))
