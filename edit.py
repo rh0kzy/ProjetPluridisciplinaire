@@ -15,8 +15,6 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Montserrat")
         font.setPointSize(20)
-        MainWindow.setFont(font)
-        MainWindow.setStyleSheet("background-color: #031045;display:flex;justify-content:center;align-items:center;")
 
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -24,7 +22,7 @@ class Ui_MainWindow(object):
         # Appliquer une image de fond uniquement au centralwidget
         self.centralwidget.setStyleSheet("""
             QWidget#centralwidget {
-                border-image: url('./background.jpg') 0 0 0 0 stretch stretch;
+                border-image: url('./background2.jpg') 0 0 0 0 stretch stretch;
             }
         """)
 
@@ -64,26 +62,32 @@ class Ui_MainWindow(object):
         self.pushButton_3.clicked.connect(self.lire_port_usb)
 
         # Champs de texte
-        self.lineEdit_3 = QtWidgets.QLineEdit(parent=self.centralwidget)
-        self.lineEdit_3.setGeometry(QtCore.QRect(275, 130, 310, 36))
-        self.lineEdit_3.setStyleSheet("color: white; background-color: #031045;")
+        
+        
 
         self.lineEdit_4 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_4.setGeometry(QtCore.QRect(275, 180, 310, 36))
-        self.lineEdit_4.setStyleSheet("color: white; background-color: #031045;")
+        self.lineEdit_4.setStyleSheet("color: white; background-color: rgba(3, 20, 69, 128);")
 
         self.lineEdit_5 = QtWidgets.QLineEdit(parent=self.centralwidget)
         self.lineEdit_5.setGeometry(QtCore.QRect(275, 230, 310, 36))
-        self.lineEdit_5.setStyleSheet("color: white; background-color: #031045;")
+        self.lineEdit_5.setStyleSheet("color: white; background-color: rgba(3, 20, 69, 128);")
 
         bold_font = QtGui.QFont(font)
         bold_font.setBold(True)
         # Labels
-        self.label = QtWidgets.QLabel("Angles  📐 :", parent=self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(85, 130, 171, 35))
-        self.label.setFont(bold_font)
-        self.label.setStyleSheet("color: white;background-color: transparent;")
-
+        # Add a new label for the angles information
+        self.label_angles_info = QtWidgets.QLabel(
+            "Les angles seront automatiquement définis de 1 degré jusqu'à 360 degrés",
+            parent=self.centralwidget
+        )
+        self.label_angles_info.setGeometry(QtCore.QRect(85, 147, 400, 15))
+        angles_font = QtGui.QFont()
+        angles_font.setPointSize(10)
+        angles_font.setBold(True)
+        self.label_angles_info.setFont(angles_font)
+        self.label_angles_info.setStyleSheet("color: white; background-color: transparent;")  
+        
         self.label_2 = QtWidgets.QLabel("Rayons 📏 :", parent=self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(85, 180, 171, 35))
         self.label_2.setFont(bold_font)
