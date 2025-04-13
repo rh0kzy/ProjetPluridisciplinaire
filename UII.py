@@ -99,13 +99,8 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
 
-    # Start of fonctions
-
-
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle("MainWindow")
-        
-     # Upload file
 
     def lire_fichier(self):
         root = Tk()
@@ -120,8 +115,6 @@ class Ui_MainWindow(object):
             self.lineEdit_4.setText(','.join(map(str, data['rayon'].tolist())))
         except Exception as e:
             messagebox.showerror("Erreur", f"Impossible de lire le fichier : {e}")
-            
-     # Collect Data from text field
     
     def collecter_donnees(self):
         try:
@@ -137,8 +130,6 @@ class Ui_MainWindow(object):
         except ValueError:
             messagebox.showerror("Erreur", "Veuillez entrer des nombres valides.")
             return None
-        
-    # Polar    
     
     def tracer_polaire(self, donnees):
         angles = np.deg2rad(donnees['angle'])
@@ -147,8 +138,6 @@ class Ui_MainWindow(object):
         plt.plot(angles, rayons, 'r')
         plt.title("Graphique Polaire")
         plt.show()
-        
-    # Spherique    
     
     def tracer_spherique(self, donnees):
         try:
@@ -169,8 +158,6 @@ class Ui_MainWindow(object):
             plt.show()
         except Exception as e:
             messagebox.showerror("Erreur", f"Erreur dans le tracé sphérique : {e}")
-            
-    # Update Graphique        
     
     def mettre_a_jour_graphique(self, mode):
         donnees = self.collecter_donnees()
@@ -179,8 +166,6 @@ class Ui_MainWindow(object):
                 self.tracer_polaire(donnees)
             elif mode == "spherique":
                 self.tracer_spherique(donnees)
-                
-    # Read from USB port            
     
     def lire_port_usb(self):
         port = self.lineEdit_5.text()
@@ -192,8 +177,6 @@ class Ui_MainWindow(object):
                 print(f"Données reçues : {ligne}")
         except Exception as e:
             messagebox.showerror("Erreur", f"Problème avec le port USB : {e}")
-            
- ## Main function to run the application           
         
 
 if __name__ == "__main__":
