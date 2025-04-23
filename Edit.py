@@ -365,21 +365,28 @@ class Ui_MainWindow(object):
                 QMessageBox.critical(None, "Erreur", "Veuillez entrer des rayons.")
                 return None
 
-            rayons = list(map(float, rayons_str.split(',')))
+            # Séparer les valeurs et convertir en float
+            rayons = []
+            for val in rayons_str.split(','):
+                val = val.strip()
+                if val.endswith('dBi'):
+                    val = val[:-3]  # Enlever 'dBi'
+                try:
+                    rayons.append(float(val))
+                except ValueError:
+                    QMessageBox.critical(None, "Erreur", f"Valeur invalide: {val}")
+                    return None
+
             if not rayons:
                 QMessageBox.critical(None, "Erreur", "La liste des rayons est vide.")
                 return None
 
             rayons = np.array(rayons)
 
-            # Normalisation: valeurs - max
-            max_val = np.max(rayons)
-            rayons_normalises = rayons - max_val
-
             # Générer les angles
             angles = np.linspace(0, 360, len(rayons), endpoint=False)
 
-            return pd.DataFrame({'angle': angles, 'rayon': rayons_normalises})
+            return pd.DataFrame({'angle': angles, 'rayon': rayons})
 
         except ValueError:
             QMessageBox.critical(None, "Erreur",
@@ -403,7 +410,7 @@ class Ui_MainWindow(object):
             if titre:
                 ax.set_title(f"Diagramme Polaire - {titre}", pad=20)
             else:
-                ax.set_title("Diagramme Polaire Normalisé", pad=20)
+                ax.set_title("Diagramme Polaire (dBi)", pad=20)
             ax.grid(True)
             
             # Fonction pour mettre à jour les ticks et labels
@@ -412,71 +419,11 @@ class Ui_MainWindow(object):
                 # Générer 5 ticks entre les limites actuelles
                 r_ticks = np.linspace(rmin, rmax, 5)
                 ax.set_rticks(r_ticks)
-                # Formater les labels avec 2 décimales
-                ax.set_yticklabels([f"{tick:.2f}" for tick in r_ticks])
+                # Formater les labels avec 2 décimales et ajouter dBi
+                ax.set_yticklabels([f"{tick:.2f} dBi" for tick in r_ticks])
             
             # Initialiser les ticks
             update_ticks()
-            
-            # Variables pour le déplacement
-            pan_start = None
-            pan_initial_lim = None
-            
-            def on_scroll(event):
-                if event.inaxes == ax:
-                    # Récupérer les limites actuelles
-                    rmin, rmax = ax.get_ylim()
-                    # Calculer le facteur de zoom
-                    zoom_factor = 1.1 if event.button == 'up' else 0.9
-                    # Appliquer le zoom
-                    ax.set_ylim(rmin * zoom_factor, rmax * zoom_factor)
-                    # Mettre à jour les ticks
-                    update_ticks()
-                    plt.draw()
-            
-            def on_press(event):
-                nonlocal pan_start, pan_initial_lim
-                if event.button == 3:  # Clic droit
-                    pan_start = (event.xdata, event.ydata)
-                    pan_initial_lim = ax.get_ylim()
-            
-            def on_release(event):
-                nonlocal pan_start
-                if event.button == 3:  # Clic droit
-                    pan_start = None
-            
-            def on_motion(event):
-                nonlocal pan_start, pan_initial_lim
-                if pan_start is None or event.inaxes != ax:
-                    return
-                
-                if event.button == 3:  # Clic droit
-                    # Calculer le déplacement
-                    dx = event.xdata - pan_start[0]
-                    dy = event.ydata - pan_start[1]
-                    
-                    # Convertir le déplacement en coordonnées polaires
-                    r, theta = pan_start
-                    new_r = r + dy
-                    
-                    # Mettre à jour les limites
-                    rmin, rmax = pan_initial_lim
-                    r_range = rmax - rmin
-                    new_rmin = rmin + dy
-                    new_rmax = rmax + dy
-                    
-                    # Limiter le déplacement pour éviter des valeurs négatives
-                    if new_rmin > 0 and new_rmax > 0:
-                        ax.set_ylim(new_rmin, new_rmax)
-                        # Mettre à jour les ticks
-                        update_ticks()
-                        plt.draw()
-            
-            # Connecter les événements de la souris
-            fig.canvas.mpl_connect('scroll_event', on_scroll)
-            fig.canvas.mpl_connect('button_press_event', on_press)
-            fig.canvas.mpl_connect('button_release_event', on_release)
-            fig.canvas.mpl_connect('motion_notify_event', on_motion)
             
             plt.tight_layout()
             plt.show()
@@ -490,18 +437,18 @@ class Ui_MainWindow(object):
         try:
             plt.style.use('seaborn-v0_8-darkgrid')
             
-            # Utiliser la même résolution optimisée que dans tracer_spherique_combine
-            resolution = 30  # Réduit la résolution pour de meilleures performances
+            # Augmentation de la résolution
+            resolution = 100  # Augmenté de 30 à 100
             
             theta = np.deg2rad(donnees['angle'].values)
             r = donnees['rayon'].values
             
-            # Création d'une grille plus petite
+            # Création d'une grille plus fine
             theta_grid = np.linspace(0, 2*np.pi, resolution)
             phi_grid = np.linspace(0, np.pi, resolution)
             theta_mesh, phi_mesh = np.meshgrid(theta_grid, phi_grid)
             
-            # Interpolation plus efficace
+            # Interpolation plus précise
             r_grid = np.interp(theta_mesh.flatten(), 
                              np.linspace(0, 2*np.pi, len(r)), 
                              r).reshape(theta_mesh.shape)
@@ -510,44 +457,81 @@ class Ui_MainWindow(object):
             Y = r_grid * np.sin(phi_mesh) * np.sin(theta_mesh)
             Z = r_grid * np.cos(phi_mesh)
             
-            # Configuration de la figure pour de meilleures performances
-            plt.rcParams['figure.dpi'] = 80
-            plt.rcParams['savefig.dpi'] = 80
-            plt.rcParams['figure.figsize'] = [10, 8]
+            # Configuration de la figure pour une meilleure qualité
+            plt.rcParams['figure.dpi'] = 150  # Augmenté de 80 à 150
+            plt.rcParams['savefig.dpi'] = 150
+            plt.rcParams['figure.figsize'] = [12, 10]  # Taille de figure augmentée
             
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
             
             # Normalisation des couleurs
-            norm = plt.Normalize(np.min(r), 0)
+            norm = plt.Normalize(np.min(r), np.max(r))
             
-            # Tracé de la surface avec des paramètres optimisés
+            # Tracé de la surface avec une meilleure qualité
             surf = ax.plot_surface(X, Y, Z, 
                                  cmap='viridis',
                                  norm=norm,
                                  alpha=0.8,
                                  rcount=resolution,
                                  ccount=resolution,
-                                 antialiased=False)
+                                 antialiased=True,  # Activé l'antialiasing
+                                 linewidth=0.5)  # Ajout de lignes de contour
             
             fig.colorbar(surf, ax=ax, shrink=0.5, label='dBi')
             
             if titre:
-                ax.set_title(f"Diagramme 3D - {titre}")
+                ax.set_title(f"Diagramme 3D - {titre}", fontsize=12)
             else:
-                ax.set_title("Diagramme 3D Normalisé")
+                ax.set_title("Diagramme 3D (dBi)", fontsize=12)
             ax.view_init(elev=30, azim=45)
             
-            # Optimisations supplémentaires
+            # Optimisations pour une meilleure qualité
             ax.set_axis_off()
             ax.grid(False)
             
             plt.tight_layout()
-            plt.show(block=False)  # Ne bloque pas l'interface
+            plt.show(block=False)
             
         except Exception as e:
             QMessageBox.critical(None, "Erreur", f"Erreur dans le tracé sphérique : {str(e)}")
             self.barre_etat.showMessage("Erreur lors du tracé sphérique", 3000)
+
+    def tracer_2d(self, donnees, titre=None):
+        """Trace le diagramme en 2D"""
+        try:
+            plt.style.use('seaborn-v0_8-darkgrid')
+            fig = plt.figure(figsize=(8, 6))
+            ax = plt.subplot(111)
+            
+            angles = donnees['angle']
+            rayons = donnees['rayon']
+            
+            ax.plot(angles, rayons, 
+                   color=self.accent_color,
+                   linewidth=2)
+            
+            if titre:
+                ax.set_title(f"Diagramme 2D - {titre}", pad=20)
+            else:
+                ax.set_title("Diagramme 2D (dBi)", pad=20)
+            
+            ax.set_xlabel('Angle (degrés)')
+            ax.set_ylabel('Gain (dBi)')
+            ax.grid(True)
+            
+            # Ajuster les ticks de l'axe Y
+            ymin, ymax = ax.get_ylim()
+            y_ticks = np.linspace(ymin, ymax, 5)
+            ax.set_yticks(y_ticks)
+            ax.set_yticklabels([f"{tick:.2f} dBi" for tick in y_ticks])
+            
+            plt.tight_layout()
+            plt.show()
+            
+        except Exception as e:
+            QMessageBox.critical(None, "Erreur", f"Erreur dans le tracé 2D : {str(e)}")
+            self.barre_etat.showMessage("Erreur lors du tracé 2D", 3000)
 
     def mettre_a_jour_graphique(self, mode):
         """Met à jour le graphique selon le mode sélectionné"""
@@ -559,6 +543,8 @@ class Ui_MainWindow(object):
                 self.tracer_polaire(donnees, titre)
             elif mode == "spherique":
                 self.tracer_spherique(donnees, titre)
+            elif mode == "2d":
+                self.tracer_2d(donnees, titre)
     
     def tracer_toutes_sections(self):
         """Trace les graphiques pour toutes les sections détectées"""
@@ -608,19 +594,19 @@ class Ui_MainWindow(object):
         try:
             plt.style.use('seaborn-v0_8-darkgrid')
             
-            # Réduire encore plus la résolution pour de meilleures performances
-            resolution = 30  # Réduit de 50 à 30 points
+            # Augmentation de la résolution
+            resolution = 100  # Augmenté de 30 à 100
             
             # Préparation des données pour le premier graphique
             theta1 = np.deg2rad(donnees1['angle'].values)
             r1 = donnees1['rayon'].values
             
-            # Création d'une grille plus petite
+            # Création d'une grille plus fine
             theta_grid1 = np.linspace(0, 2*np.pi, resolution)
             phi_grid1 = np.linspace(0, np.pi, resolution)
             theta_mesh1, phi_mesh1 = np.meshgrid(theta_grid1, phi_grid1)
             
-            # Interpolation plus efficace
+            # Interpolation plus précise
             r_grid1 = np.interp(theta_mesh1.flatten(), 
                               np.linspace(0, 2*np.pi, len(r1)), 
                               r1).reshape(theta_mesh1.shape)
@@ -644,26 +630,27 @@ class Ui_MainWindow(object):
             Y2 = r_grid2 * np.sin(phi_mesh2) * np.sin(theta_mesh2)
             Z2 = r_grid2 * np.cos(phi_mesh2)
             
-            # Configuration de la figure pour de meilleures performances
-            plt.rcParams['figure.dpi'] = 80  # Réduit encore plus la résolution
-            plt.rcParams['savefig.dpi'] = 80
-            plt.rcParams['figure.figsize'] = [10, 8]  # Taille de figure plus petite
+            # Configuration de la figure pour une meilleure qualité
+            plt.rcParams['figure.dpi'] = 150
+            plt.rcParams['savefig.dpi'] = 150
+            plt.rcParams['figure.figsize'] = [12, 10]
             
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
             
             # Normalisation des couleurs
-            norm1 = plt.Normalize(np.min(r1), 0)
-            norm2 = plt.Normalize(np.min(r2), 0)
+            norm1 = plt.Normalize(np.min(r1), np.max(r1))
+            norm2 = plt.Normalize(np.min(r2), np.max(r2))
             
-            # Tracé des surfaces avec des paramètres optimisés
+            # Tracé des surfaces avec une meilleure qualité
             surf1 = ax.plot_surface(X1, Y1, Z1, 
                                   cmap='viridis',
                                   norm=norm1,
-                                  alpha=0.7,  # Légèrement plus opaque
+                                  alpha=0.7,
                                   rcount=resolution,
                                   ccount=resolution,
-                                  antialiased=False)  # Désactive l'antialiasing
+                                  antialiased=True,
+                                  linewidth=0.5)
             
             surf2 = ax.plot_surface(X2, Y2, Z2, 
                                   cmap='plasma',
@@ -671,22 +658,21 @@ class Ui_MainWindow(object):
                                   alpha=0.7,
                                   rcount=resolution,
                                   ccount=resolution,
-                                  antialiased=False)
+                                  antialiased=True,
+                                  linewidth=0.5)
             
-            # Optimisations supplémentaires
+            # Optimisations pour une meilleure qualité
             ax.set_axis_off()
             ax.grid(False)
             
             # Titre simplifié
             if titre1 and titre2:
-                ax.set_title(f"3D: {titre1} & {titre2}", fontsize=10)
+                ax.set_title(f"3D: {titre1} & {titre2}", fontsize=12)
             else:
-                ax.set_title("Diagramme 3D Combiné", fontsize=10)
+                ax.set_title("Diagramme 3D Combiné", fontsize=12)
             
             plt.tight_layout()
-            
-            # Configuration de la fenêtre pour de meilleures performances
-            plt.show(block=False)  # Ne bloque pas l'interface
+            plt.show(block=False)
             
         except Exception as e:
             QMessageBox.critical(None, "Erreur", f"Erreur dans le tracé sphérique combiné : {str(e)}")
