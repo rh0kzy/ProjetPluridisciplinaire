@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import serial
 import serial.tools.list_ports
-from PyQt6.QtGui import QAction 
+from PyQt6.QtGui import QAction, QFont, QPalette, QColor, QLinearGradient, QGradient
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMessageBox, QFileDialog
 from mpl_toolkits.mplot3d import Axes3D
@@ -13,255 +13,218 @@ from mpl_toolkits.mplot3d import Axes3D
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 700)
+        MainWindow.resize(600, 500)
+        MainWindow.setMinimumSize(600, 500)
         font = QtGui.QFont()
-        font.setFamily("Montserrat")
-        font.setPointSize(12)
+        font.setFamily("Segoe UI")
+        font.setPointSize(9)
 
-        # Palette de couleurs
-        self.primary_color = "#031045"
-        self.secondary_color = "#4ECDC4"
-        self.accent_color = "#FF6B6B"
-        self.text_color = "#FFFFFF"
-        self.background_color = "#F5F7FA"
+        # Palette de couleurs modernisée
+        self.primary_color = "#2C3E50"  # Bleu foncé moderne
+        self.secondary_color = "#3498DB"  # Bleu clair
+        self.accent_color = "#E74C3C"  # Rouge vif
+        self.text_color = "#ECF0F1"  # Blanc cassé
+        self.background_color = "#F5F7FA"  # Gris très clair
+        self.hover_color = "#2980B9"  # Bleu pour le survol
+        self.success_color = "#2ECC71"  # Vert pour les actions positives
 
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.centralwidget.setStyleSheet(f"""
             QWidget#centralwidget {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 {self.primary_color}, stop:1 #1a3a8f);
+                    stop:0 {self.primary_color}, stop:1 #34495E);
                 border-radius: 15px;
             }}
             QPushButton {{
-                background-color: {self.text_color};
-                color: {self.primary_color};
-                border-radius: 10px;
-                padding: 10px;
-                font-weight: bold;
-            }}
-            QPushButton:hover {{
                 background-color: {self.secondary_color};
                 color: {self.text_color};
+                border-radius: 8px;
+                padding: 12px 20px;
+                font-weight: bold;
+                border: none;
+                min-width: 120px;
+            }}
+            QPushButton:hover {{
+                background-color: {self.hover_color};
+                border: 2px solid {self.accent_color};
+            }}
+            QPushButton:pressed {{
+                background-color: {self.accent_color};
+                border: 2px solid {self.hover_color};
             }}
             QLineEdit {{
                 background-color: rgba(255, 255, 255, 0.9);
                 border: 2px solid {self.secondary_color};
                 border-radius: 8px;
-                padding: 5px;
+                padding: 8px;
                 color: {self.primary_color};
                 font-weight: bold;
+                min-height: 25px;
             }}
             QComboBox {{
                 background-color: rgba(255, 255, 255, 0.9);
                 border: 2px solid {self.secondary_color};
                 border-radius: 8px;
-                padding: 5px;
+                padding: 8px;
                 color: {self.primary_color};
                 font-weight: bold;
+                min-height: 25px;
             }}
             QComboBox QAbstractItemView {{
                 background-color: white;
                 color: {self.primary_color};
                 selection-background-color: {self.secondary_color};
-                font-weight: bold;
+                border: 1px solid {self.secondary_color};
+                border-radius: 8px;
             }}
             QLabel {{
+                color: {self.text_color};
                 font-weight: bold;
+                font-size: 12px;
             }}
             QGroupBox {{
                 color: {self.text_color};
                 border: 2px solid {self.secondary_color};
-                border-radius: 10px;
-                margin-top: 10px;
-                font-weight: bold;
+                border-radius: 12px;
+                margin-top: 15px;
+                padding-top: 15px;
+                background-color: rgba(255, 255, 255, 0.1);
             }}
             QGroupBox::title {{
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
+                left: 15px;
+                padding: 0 8px;
+                color: {self.text_color};
                 font-weight: bold;
             }}
             QStatusBar {{
+                background-color: {self.primary_color};
+                color: {self.text_color};
                 font-weight: bold;
+            }}
+            QMenuBar {{
+                background-color: {self.primary_color};
+                color: {self.text_color};
+            }}
+            QMenuBar::item:selected {{
+                background-color: {self.secondary_color};
+            }}
+            QMenu {{
+                background-color: {self.primary_color};
+                color: {self.text_color};
+                border: 1px solid {self.secondary_color};
+            }}
+            QMenu::item:selected {{
+                background-color: {self.secondary_color};
             }}
         """)
 
         self.main_layout = QtWidgets.QVBoxLayout(self.centralwidget)
-        self.main_layout.setContentsMargins(40, 30, 40, 30)
-        self.main_layout.setSpacing(20)
+        self.main_layout.setContentsMargins(15, 10, 15, 10)  # Marges réduites
+        self.main_layout.setSpacing(8)  # Espacement réduit entre les éléments
 
-        # En-tête
-        self.header = QtWidgets.QHBoxLayout()
-        self.title_label = QtWidgets.QLabel("Analyse de Diagramme de Rayonnement")
-        title_font = QtGui.QFont(font)
-        title_font.setPointSize(18)
-        title_font.setBold(True)
-        self.title_label.setFont(title_font)
-        self.title_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
-        self.header.addWidget(self.title_label)
-        self.header.addStretch()
-        self.main_layout.addLayout(self.header)
-
-        # Section fichier
-        self.file_group = QtWidgets.QGroupBox("Entrée des Données")
+        # Section fichier avec icônes
+        self.file_group = QtWidgets.QGroupBox("📂 Entrée des Données")
         self.file_group.setFont(font)
-        self.file_group.setStyleSheet(f"""
-            QGroupBox {{
-                color: {self.text_color};
-                border: 2px solid {self.secondary_color};
-                border-radius: 10px;
-                margin-top: 10px;
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
-            }}
-        """)
+        self.file_group.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         
         self.file_layout = QtWidgets.QVBoxLayout(self.file_group)
         
-        # Bouton charger fichier
-        self.load_file_btn = QtWidgets.QPushButton("Charger un fichier 📂")
+        # Bouton charger fichier avec icône
+        self.load_file_btn = QtWidgets.QPushButton("📂 Charger un fichier")
         self.load_file_btn.setFont(font)
+        self.load_file_btn.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         self.file_layout.addWidget(self.load_file_btn)
 
-        # Champ de saisie
+        # Champ de saisie avec icône
         self.radii_layout = QtWidgets.QHBoxLayout()
-        self.radii_label = QtWidgets.QLabel("Rayons 📏:")
+        self.radii_label = QtWidgets.QLabel("📏 Rayons:")
         self.radii_label.setFont(font)
-        self.radii_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
+        self.radii_label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         self.radii_layout.addWidget(self.radii_label)
         
         self.radii_input = QtWidgets.QLineEdit()
         self.radii_input.setFont(font)
+        self.radii_input.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         self.radii_input.setPlaceholderText("Entrez les valeurs séparées par des virgules")
         self.radii_layout.addWidget(self.radii_input)
         self.file_layout.addLayout(self.radii_layout)
 
-        # Info angles
-        self.angles_info = QtWidgets.QLabel("*Les angles sont générés automatiquement selon le nombre de rayons")
+        # Info angles avec style amélioré
+        self.angles_info = QtWidgets.QLabel("ℹ️ Les angles sont générés automatiquement selon le nombre de rayons")
         info_font = QtGui.QFont(font)
-        info_font.setPointSize(10)
+        info_font.setPointSize(9)
         info_font.setItalic(True)
-        info_font.setBold(True)
         self.angles_info.setFont(info_font)
-        self.angles_info.setStyleSheet(f"color: {self.secondary_color}; font-weight: bold;")
+        self.angles_info.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.angles_info.setStyleSheet(f"color: {self.secondary_color};")
         self.file_layout.addWidget(self.angles_info)
 
-        # Menu déroulant pour les sections par date
+        # Menu déroulant avec icône
         self.sections_layout = QtWidgets.QHBoxLayout()
-        self.sections_label = QtWidgets.QLabel("Sélection par date 📅:")
+        self.sections_label = QtWidgets.QLabel("📅 Sélection par date:")
         self.sections_label.setFont(font)
-        self.sections_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
+        self.sections_label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         self.sections_layout.addWidget(self.sections_label)
         
         self.sections_combo = QtWidgets.QComboBox()
         self.sections_combo.setFont(font)
+        self.sections_combo.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         self.sections_combo.setPlaceholderText("Sélectionnez une date")
         self.sections_layout.addWidget(self.sections_combo)
         self.file_layout.addLayout(self.sections_layout)
 
         self.main_layout.addWidget(self.file_group)
 
-        # Section USB
-        self.usb_group = QtWidgets.QGroupBox("Connexion USB")
-        self.usb_group.setFont(font)
-        self.usb_group.setStyleSheet(f"""
-            QGroupBox {{
-                color: {self.text_color};
-                border: 2px solid {self.secondary_color};
-                border-radius: 10px;
-                margin-top: 10px;
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
-            }}
-        """)
-        
-        self.usb_layout = QtWidgets.QVBoxLayout(self.usb_group)
-        
-        # Sélection port
-        self.port_layout = QtWidgets.QHBoxLayout()
-        self.port_label = QtWidgets.QLabel("Port USB 🔌:")
-        self.port_label.setFont(font)
-        self.port_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
-        self.port_layout.addWidget(self.port_label)
-        
-        self.port_combo = QtWidgets.QComboBox()
-        self.port_combo.setFont(font)
-        self.port_layout.addWidget(self.port_combo)
-        
-        self.refresh_btn = QtWidgets.QPushButton("🔄")
-        self.refresh_btn.setFixedSize(40, 40)
-        self.refresh_btn.setToolTip("Rafraîchir la liste des ports")
-        self.refresh_btn.setStyleSheet("font-weight: bold;")
-        self.port_layout.addWidget(self.refresh_btn)
-        self.usb_layout.addLayout(self.port_layout)
-
-        # Bouton lecture USB
-        self.read_usb_btn = QtWidgets.QPushButton("Lire depuis USB 💾")
-        self.read_usb_btn.setFont(font)
-        self.usb_layout.addWidget(self.read_usb_btn)
-
-        self.main_layout.addWidget(self.usb_group)
-
-        # Section visualisation
-        self.viz_group = QtWidgets.QGroupBox("Visualisation")
+        # Section visualisation avec style moderne
+        self.viz_group = QtWidgets.QGroupBox("📊 Visualisation")
         self.viz_group.setFont(font)
-        self.viz_group.setStyleSheet(f"""
-            QGroupBox {{
-                color: {self.text_color};
-                border: 2px solid {self.secondary_color};
-                border-radius: 10px;
-                margin-top: 10px;
-            }}
-            QGroupBox::title {{
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
-            }}
-        """)
+        self.viz_group.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         
-        self.viz_layout = QtWidgets.QHBoxLayout(self.viz_group)
+        # Création d'une grille pour les boutons
+        self.viz_layout = QtWidgets.QGridLayout(self.viz_group)
+        self.viz_layout.setSpacing(10)
         
-        # Bouton polaire
-        self.polar_btn = QtWidgets.QPushButton("Tracer en polaire 📊")
+        # Boutons de visualisation avec icônes
+        self.polar_btn = QtWidgets.QPushButton("📈 Tracer en polaire")
         self.polar_btn.setFont(font)
-        self.viz_layout.addWidget(self.polar_btn)
+        self.polar_btn.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.polar_btn.setMinimumHeight(40)
+        self.viz_layout.addWidget(self.polar_btn, 0, 0)
         
-        # Bouton sphérique
-        self.sphere_btn = QtWidgets.QPushButton("Tracer en sphérique 🌐")
+        self.sphere_btn = QtWidgets.QPushButton("🌐 Tracer en sphérique")
         self.sphere_btn.setFont(font)
-        self.viz_layout.addWidget(self.sphere_btn)
+        self.sphere_btn.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.sphere_btn.setMinimumHeight(40)
+        self.viz_layout.addWidget(self.sphere_btn, 0, 1)
         
-        # Bouton pour tracer tous les graphiques
-        self.all_graphs_btn = QtWidgets.QPushButton("Tracer tout les graphes 📈")
+        self.all_graphs_btn = QtWidgets.QPushButton("📊 Tracer tous les graphes")
         self.all_graphs_btn.setFont(font)
-        self.viz_layout.addWidget(self.all_graphs_btn)
+        self.all_graphs_btn.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.all_graphs_btn.setMinimumHeight(40)
+        self.viz_layout.addWidget(self.all_graphs_btn, 1, 0)
         
-        # Ajout d'un nouveau bouton pour le graphique combiné
-        self.combine_btn = QtWidgets.QPushButton("Tracer en sphérique combiné 🌐")
+        self.combine_btn = QtWidgets.QPushButton("🌐 Tracer en sphérique combiné")
         self.combine_btn.setFont(font)
-        self.viz_layout.addWidget(self.combine_btn)
+        self.combine_btn.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.combine_btn.setMinimumHeight(40)
+        self.viz_layout.addWidget(self.combine_btn, 1, 1)
+        
+        # Ajuster les colonnes pour qu'elles aient la même largeur
+        self.viz_layout.setColumnStretch(0, 1)
+        self.viz_layout.setColumnStretch(1, 1)
         
         self.main_layout.addWidget(self.viz_group)
 
-        # Barre d'état
+        # Barre d'état avec style moderne
         self.status_bar = QtWidgets.QStatusBar()
         self.status_bar.setFont(font)
-        self.status_bar.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
         MainWindow.setStatusBar(self.status_bar)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.retranslateUi(MainWindow)
         
-        # Initialiser la liste des ports
-        self.actualiser_ports_serie()
-
         # Définir les références
         self.input_rayons = self.radii_input
         self.barre_etat = self.status_bar
@@ -271,8 +234,6 @@ class Ui_MainWindow(object):
 
         # Connecter les boutons
         self.load_file_btn.clicked.connect(self.lire_fichier)
-        self.refresh_btn.clicked.connect(self.actualiser_ports_serie)
-        self.read_usb_btn.clicked.connect(self.lire_port_usb)
         self.polar_btn.clicked.connect(lambda: self.mettre_a_jour_graphique("polaire"))
         self.sphere_btn.clicked.connect(lambda: self.mettre_a_jour_graphique("spherique"))
         self.all_graphs_btn.clicked.connect(self.tracer_toutes_sections)
@@ -284,13 +245,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Analyse de Diagramme de Rayonnement"))
-
-    def actualiser_ports_serie(self):
-        """Met à jour la liste des ports série disponibles"""
-        self.port_combo.clear()
-        ports = serial.tools.list_ports.comports()
-        for port in ports:
-            self.port_combo.addItem(port.device)
 
     def detecter_sections_par_date(self, contenu):
         """Détecte les différentes sections de données par date et heure dans le fichier"""
@@ -452,10 +406,77 @@ class Ui_MainWindow(object):
                 ax.set_title("Diagramme Polaire Normalisé", pad=20)
             ax.grid(True)
             
-            # Ajustement des ticks
-            r_ticks = np.linspace(np.min(rayons), 0, 5)
-            ax.set_rticks(r_ticks)
-            ax.set_yticklabels([f"{tick:.1f}" for tick in r_ticks])
+            # Fonction pour mettre à jour les ticks et labels
+            def update_ticks():
+                rmin, rmax = ax.get_ylim()
+                # Générer 5 ticks entre les limites actuelles
+                r_ticks = np.linspace(rmin, rmax, 5)
+                ax.set_rticks(r_ticks)
+                # Formater les labels avec 2 décimales
+                ax.set_yticklabels([f"{tick:.2f}" for tick in r_ticks])
+            
+            # Initialiser les ticks
+            update_ticks()
+            
+            # Variables pour le déplacement
+            pan_start = None
+            pan_initial_lim = None
+            
+            def on_scroll(event):
+                if event.inaxes == ax:
+                    # Récupérer les limites actuelles
+                    rmin, rmax = ax.get_ylim()
+                    # Calculer le facteur de zoom
+                    zoom_factor = 1.1 if event.button == 'up' else 0.9
+                    # Appliquer le zoom
+                    ax.set_ylim(rmin * zoom_factor, rmax * zoom_factor)
+                    # Mettre à jour les ticks
+                    update_ticks()
+                    plt.draw()
+            
+            def on_press(event):
+                nonlocal pan_start, pan_initial_lim
+                if event.button == 3:  # Clic droit
+                    pan_start = (event.xdata, event.ydata)
+                    pan_initial_lim = ax.get_ylim()
+            
+            def on_release(event):
+                nonlocal pan_start
+                if event.button == 3:  # Clic droit
+                    pan_start = None
+            
+            def on_motion(event):
+                nonlocal pan_start, pan_initial_lim
+                if pan_start is None or event.inaxes != ax:
+                    return
+                
+                if event.button == 3:  # Clic droit
+                    # Calculer le déplacement
+                    dx = event.xdata - pan_start[0]
+                    dy = event.ydata - pan_start[1]
+                    
+                    # Convertir le déplacement en coordonnées polaires
+                    r, theta = pan_start
+                    new_r = r + dy
+                    
+                    # Mettre à jour les limites
+                    rmin, rmax = pan_initial_lim
+                    r_range = rmax - rmin
+                    new_rmin = rmin + dy
+                    new_rmax = rmax + dy
+                    
+                    # Limiter le déplacement pour éviter des valeurs négatives
+                    if new_rmin > 0 and new_rmax > 0:
+                        ax.set_ylim(new_rmin, new_rmax)
+                        # Mettre à jour les ticks
+                        update_ticks()
+                        plt.draw()
+            
+            # Connecter les événements de la souris
+            fig.canvas.mpl_connect('scroll_event', on_scroll)
+            fig.canvas.mpl_connect('button_press_event', on_press)
+            fig.canvas.mpl_connect('button_release_event', on_release)
+            fig.canvas.mpl_connect('motion_notify_event', on_motion)
             
             plt.tight_layout()
             plt.show()
@@ -469,29 +490,47 @@ class Ui_MainWindow(object):
         try:
             plt.style.use('seaborn-v0_8-darkgrid')
             
+            # Utiliser la même résolution optimisée que dans tracer_spherique_combine
+            resolution = 30  # Réduit la résolution pour de meilleures performances
+            
             theta = np.deg2rad(donnees['angle'].values)
-            phi = np.linspace(0, np.pi, len(theta))
             r = donnees['rayon'].values
             
-            theta_grid, phi_grid = np.meshgrid(theta, phi)
-            r_grid = np.tile(r, (len(phi), 1))
+            # Création d'une grille plus petite
+            theta_grid = np.linspace(0, 2*np.pi, resolution)
+            phi_grid = np.linspace(0, np.pi, resolution)
+            theta_mesh, phi_mesh = np.meshgrid(theta_grid, phi_grid)
             
-            X = r_grid * np.sin(phi_grid) * np.cos(theta_grid)
-            Y = r_grid * np.sin(phi_grid) * np.sin(theta_grid)
-            Z = r_grid * np.cos(phi_grid)
+            # Interpolation plus efficace
+            r_grid = np.interp(theta_mesh.flatten(), 
+                             np.linspace(0, 2*np.pi, len(r)), 
+                             r).reshape(theta_mesh.shape)
             
-            fig = plt.figure(figsize=(10, 8))
+            X = r_grid * np.sin(phi_mesh) * np.cos(theta_mesh)
+            Y = r_grid * np.sin(phi_mesh) * np.sin(theta_mesh)
+            Z = r_grid * np.cos(phi_mesh)
+            
+            # Configuration de la figure pour de meilleures performances
+            plt.rcParams['figure.dpi'] = 80
+            plt.rcParams['savefig.dpi'] = 80
+            plt.rcParams['figure.figsize'] = [10, 8]
+            
+            fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
             
             # Normalisation des couleurs
             norm = plt.Normalize(np.min(r), 0)
             
+            # Tracé de la surface avec des paramètres optimisés
             surf = ax.plot_surface(X, Y, Z, 
                                  cmap='viridis',
                                  norm=norm,
-                                 alpha=0.8)
+                                 alpha=0.8,
+                                 rcount=resolution,
+                                 ccount=resolution,
+                                 antialiased=False)
             
-            fig.colorbar(surf, ax=ax, shrink=0.5, label='Intensité Normalisée')
+            fig.colorbar(surf, ax=ax, shrink=0.5, label='dBi')
             
             if titre:
                 ax.set_title(f"Diagramme 3D - {titre}")
@@ -499,8 +538,12 @@ class Ui_MainWindow(object):
                 ax.set_title("Diagramme 3D Normalisé")
             ax.view_init(elev=30, azim=45)
             
+            # Optimisations supplémentaires
+            ax.set_axis_off()
+            ax.grid(False)
+            
             plt.tight_layout()
-            plt.show()
+            plt.show(block=False)  # Ne bloque pas l'interface
             
         except Exception as e:
             QMessageBox.critical(None, "Erreur", f"Erreur dans le tracé sphérique : {str(e)}")
@@ -525,7 +568,8 @@ class Ui_MainWindow(object):
         
         try:
             plt.style.use('seaborn-v0_8-darkgrid')
-            fig, axs = plt.subplots(len(self.sections_donnees), 1, figsize=(10, 4*len(self.sections_donnees)), 
+            # Changer la disposition pour avoir les graphiques horizontalement
+            fig, axs = plt.subplots(1, len(self.sections_donnees), figsize=(4*len(self.sections_donnees), 10), 
                                    subplot_kw={'projection': 'polar'})
             
             # Si une seule section, axs n'est pas un tableau
@@ -550,7 +594,7 @@ class Ui_MainWindow(object):
                 axs[i].set_yticklabels([f"{tick:.1f}" for tick in r_ticks])
             
             plt.tight_layout()
-            plt.subplots_adjust(hspace=0.5)
+            plt.subplots_adjust(wspace=0.5)  # Ajuster l'espacement horizontal
             plt.show()
             
             self.barre_etat.showMessage(f"Graphiques de toutes les sections tracés ({len(self.sections_donnees)} sections)", 3000)
@@ -558,101 +602,6 @@ class Ui_MainWindow(object):
         except Exception as e:
             QMessageBox.critical(None, "Erreur", f"Erreur lors du tracé des sections : {str(e)}")
             self.barre_etat.showMessage("Erreur lors du tracé des sections", 3000)
-
-    def lire_port_usb(self):
-        """Lit les données depuis le port USB sélectionné"""
-        port_selectionne = self.port_combo.currentText()
-        
-        if not port_selectionne:
-            QMessageBox.critical(None, "Erreur", "Aucun port USB sélectionné.")
-            return
-            
-        try:
-            # Configuration du port série
-            ser = serial.Serial(
-                port=port_selectionne,
-                baudrate=9600,
-                timeout=1
-            )
-            
-            self.barre_etat.showMessage(f"Connexion au port {port_selectionne}...", 3000)
-            
-            # Attente de la stabilisation de la connexion
-            import time
-            time.sleep(2)
-            
-            # Lecture des données (timeout après 30 secondes)
-            debut = time.time()
-            donnees = []
-            
-            while time.time() - debut < 30:
-                if ser.in_waiting > 0:
-                    ligne = ser.readline().decode('utf-8').strip()
-                    try:
-                        valeur = float(ligne)
-                        donnees.append(valeur)
-                        self.barre_etat.showMessage(f"Lecture en cours... ({len(donnees)} valeurs reçues)", 1000)
-                    except ValueError:
-                        # Ignorer les lignes qui ne sont pas des nombres
-                        pass
-                        
-                # Si on a reçu beaucoup de données, on peut arrêter
-                if len(donnees) > 100:
-                    break
-                    
-                # Petite pause pour éviter de surcharger le CPU
-                time.sleep(0.1)
-                
-            # Fermeture du port
-            ser.close()
-            
-            if not donnees:
-                QMessageBox.warning(None, "Attention", "Aucune donnée numérique reçue du port USB.")
-                return
-                
-            # Mise à jour du champ de saisie
-            self.input_rayons.setText(','.join(map(str, donnees)))
-            
-            # Enregistrer comme une nouvelle section avec la date et l'heure actuelles
-            from datetime import datetime
-            date_actuelle = datetime.now().strftime("%d-%m-%Y")
-            heure_actuelle = datetime.now().strftime("%H:%M:%S")
-            
-            self.sections_donnees.append((date_actuelle, heure_actuelle, donnees))
-            self.sections_combo.addItem(f"{date_actuelle} {heure_actuelle}")
-            self.sections_combo.setCurrentIndex(self.sections_combo.count() - 1)
-            
-            self.barre_etat.showMessage(f"Lecture terminée : {len(donnees)} valeurs lues depuis {port_selectionne}", 5000)
-            
-        except serial.SerialException as e:
-            QMessageBox.critical(None, "Erreur", f"Erreur de communication série : {str(e)}")
-        except Exception as e:
-            QMessageBox.critical(None, "Erreur", f"Erreur lors de la lecture USB : {str(e)}")
-
-    def exporter_donnees(self):
-        """Exporte les données actuelles vers un fichier CSV"""
-        donnees = self.collecter_donnees()
-        if donnees is None:
-            return
-            
-        options = QFileDialog.Option(0)
-        file_name, _ = QFileDialog.getSaveFileName(
-            None, "Enregistrer les données", "",
-            "Fichiers CSV (*.csv);;Tous les fichiers (*)",
-            options=options
-        )
-            
-        if file_name:
-            try:
-                # Ajouter l'extension .csv si nécessaire
-                if not file_name.endswith('.csv'):
-                    file_name += '.csv'
-                    
-                donnees.to_csv(file_name, index=False)
-                self.barre_etat.showMessage(f"Données exportées vers {file_name}", 3000)
-                
-            except Exception as e:
-                QMessageBox.critical(None, "Erreur", f"Erreur lors de l'exportation : {str(e)}")
 
     def tracer_spherique_combine(self, donnees1, donnees2, titre1=None, titre2=None):
         """Trace deux diagrammes sphériques 3D combinés"""
@@ -819,17 +768,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu_bar.addMenu(self.menu_fichier)
         
         # Actions pour le menu Fichier
-        self.action_ouvrir = QAction("Ouvrir...", self)  # Utilisez QAction importé
+        self.action_ouvrir = QAction("Ouvrir...", self)
         self.action_ouvrir.triggered.connect(self.ui.lire_fichier)
         self.menu_fichier.addAction(self.action_ouvrir)
         
-        self.action_exporter = QAction("Exporter...", self)  # Utilisez QAction importé
-        self.action_exporter.triggered.connect(self.ui.exporter_donnees)
-        self.menu_fichier.addAction(self.action_exporter)
-        
         self.menu_fichier.addSeparator()
         
-        self.action_quitter = QAction("Quitter", self)  # Utilisez QAction importé
+        self.action_quitter = QAction("Quitter", self)
         self.action_quitter.triggered.connect(self.close)
         self.menu_fichier.addAction(self.action_quitter)
         
@@ -840,13 +785,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def afficher_aide(self):
         """Affiche la boîte de dialogue d'aide"""
         about_text = """
-        <h2>Analyseur de Diagramme de Rayonnement</h2>
+        
         <p>Version 1.0</p>
         <p>Cet outil permet d'analyser et de visualiser des diagrammes de rayonnement d'antennes.</p>
         <p>Fonctionnalités:</p>
         <ul>
             <li>Chargement de données à partir de fichiers</li>
-            <li>Acquisition de données via port USB</li>
             <li>Visualisation en diagramme polaire et 3D</li>
             <li>Analyse de multiples sections de données</li>
         </ul>
