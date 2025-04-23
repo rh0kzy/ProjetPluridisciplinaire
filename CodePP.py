@@ -50,6 +50,7 @@ class Ui_MainWindow(object):
                 border-radius: 8px;
                 padding: 5px;
                 color: {self.primary_color};
+                font-weight: bold;
             }}
             QComboBox {{
                 background-color: rgba(255, 255, 255, 0.9);
@@ -57,11 +58,32 @@ class Ui_MainWindow(object):
                 border-radius: 8px;
                 padding: 5px;
                 color: {self.primary_color};
+                font-weight: bold;
             }}
             QComboBox QAbstractItemView {{
                 background-color: white;
                 color: {self.primary_color};
                 selection-background-color: {self.secondary_color};
+                font-weight: bold;
+            }}
+            QLabel {{
+                font-weight: bold;
+            }}
+            QGroupBox {{
+                color: {self.text_color};
+                border: 2px solid {self.secondary_color};
+                border-radius: 10px;
+                margin-top: 10px;
+                font-weight: bold;
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+                font-weight: bold;
+            }}
+            QStatusBar {{
+                font-weight: bold;
             }}
         """)
 
@@ -76,7 +98,7 @@ class Ui_MainWindow(object):
         title_font.setPointSize(18)
         title_font.setBold(True)
         self.title_label.setFont(title_font)
-        self.title_label.setStyleSheet(f"color: {self.text_color};")
+        self.title_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
         self.header.addWidget(self.title_label)
         self.header.addStretch()
         self.main_layout.addLayout(self.header)
@@ -109,7 +131,7 @@ class Ui_MainWindow(object):
         self.radii_layout = QtWidgets.QHBoxLayout()
         self.radii_label = QtWidgets.QLabel("Rayons 📏:")
         self.radii_label.setFont(font)
-        self.radii_label.setStyleSheet(f"color: {self.text_color};")
+        self.radii_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
         self.radii_layout.addWidget(self.radii_label)
         
         self.radii_input = QtWidgets.QLineEdit()
@@ -123,15 +145,16 @@ class Ui_MainWindow(object):
         info_font = QtGui.QFont(font)
         info_font.setPointSize(10)
         info_font.setItalic(True)
+        info_font.setBold(True)
         self.angles_info.setFont(info_font)
-        self.angles_info.setStyleSheet(f"color: {self.secondary_color};")
+        self.angles_info.setStyleSheet(f"color: {self.secondary_color}; font-weight: bold;")
         self.file_layout.addWidget(self.angles_info)
 
         # Menu déroulant pour les sections par date
         self.sections_layout = QtWidgets.QHBoxLayout()
         self.sections_label = QtWidgets.QLabel("Sélection par date 📅:")
         self.sections_label.setFont(font)
-        self.sections_label.setStyleSheet(f"color: {self.text_color};")
+        self.sections_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
         self.sections_layout.addWidget(self.sections_label)
         
         self.sections_combo = QtWidgets.QComboBox()
@@ -165,7 +188,7 @@ class Ui_MainWindow(object):
         self.port_layout = QtWidgets.QHBoxLayout()
         self.port_label = QtWidgets.QLabel("Port USB 🔌:")
         self.port_label.setFont(font)
-        self.port_label.setStyleSheet(f"color: {self.text_color};")
+        self.port_label.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
         self.port_layout.addWidget(self.port_label)
         
         self.port_combo = QtWidgets.QComboBox()
@@ -175,6 +198,7 @@ class Ui_MainWindow(object):
         self.refresh_btn = QtWidgets.QPushButton("🔄")
         self.refresh_btn.setFixedSize(40, 40)
         self.refresh_btn.setToolTip("Rafraîchir la liste des ports")
+        self.refresh_btn.setStyleSheet("font-weight: bold;")
         self.port_layout.addWidget(self.refresh_btn)
         self.usb_layout.addLayout(self.port_layout)
 
@@ -224,7 +248,7 @@ class Ui_MainWindow(object):
         # Barre d'état
         self.status_bar = QtWidgets.QStatusBar()
         self.status_bar.setFont(font)
-        self.status_bar.setStyleSheet(f"color: {self.text_color};")
+        self.status_bar.setStyleSheet(f"color: {self.text_color}; font-weight: bold;")
         MainWindow.setStatusBar(self.status_bar)
 
         MainWindow.setCentralWidget(self.centralwidget)
