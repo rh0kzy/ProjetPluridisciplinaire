@@ -65,11 +65,25 @@ class Ui_MainWindow(object):
             QComboBox {{
                 background-color: rgba(255, 255, 255, 0.9);
                 border: 2px solid {self.secondary_color};
-                border-radius: 8px;
+                border-radius: 12px;
                 padding: 8px;
                 color: {self.primary_color};
                 font-weight: bold;
                 min-height: 25px;
+            }}
+            QComboBox:hover {{
+                border: 2px solid {self.accent_color};
+                background-color: rgba(255, 255, 255, 0.95);
+            }}
+            QComboBox::drop-down {{
+                border: none;
+                width: 30px;
+                border-radius: 0 10px 10px 0;
+            }}
+            QComboBox::down-arrow {{
+                image: url(down_arrow.png);
+                width: 12px;
+                height: 12px;
             }}
             QComboBox QAbstractItemView {{
                 background-color: white;
@@ -77,6 +91,7 @@ class Ui_MainWindow(object):
                 selection-background-color: {self.secondary_color};
                 border: 1px solid {self.secondary_color};
                 border-radius: 8px;
+                padding: 4px;
             }}
             QLabel {{
                 color: {self.text_color};
@@ -748,25 +763,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # Ajouter un menu
         self.menu_bar = QtWidgets.QMenuBar(self)
         self.setMenuBar(self.menu_bar)
-        
-        # Menu Fichier
-        self.menu_fichier = QtWidgets.QMenu("Fichier", self)
-        self.menu_bar.addMenu(self.menu_fichier)
-        
-        # Actions pour le menu Fichier
-        self.action_ouvrir = QAction("Ouvrir...", self)
-        self.action_ouvrir.triggered.connect(self.ui.lire_fichier)
-        self.menu_fichier.addAction(self.action_ouvrir)
-        
-        self.menu_fichier.addSeparator()
-        
-        self.action_quitter = QAction("Quitter", self)
-        self.action_quitter.triggered.connect(self.close)
-        self.menu_fichier.addAction(self.action_quitter)
-        
-        # Menu Aide
-        self.menu_aide = QtWidgets.QMenu("Aide", self)
-        self.menu_bar.addMenu(self.menu_aide)
         
     def afficher_aide(self):
         """Affiche la boîte de dialogue d'aide"""
