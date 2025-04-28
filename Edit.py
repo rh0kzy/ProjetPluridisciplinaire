@@ -412,7 +412,7 @@ class Ui_MainWindow(object):
         """Trace le diagramme polaire"""
         try:
             plt.style.use('seaborn-v0_8-darkgrid')
-            fig = plt.figure(figsize=(8, 6))
+            fig = plt.figure(figsize=(8, 8))  # Taille fixée à 8x8 pouces
             ax = plt.subplot(111, projection='polar')
             
             angles = np.deg2rad(donnees['angle'])
@@ -453,7 +453,7 @@ class Ui_MainWindow(object):
             plt.style.use('seaborn-v0_8-darkgrid')
             
             # Augmentation de la résolution
-            resolution = 100  # Augmenté de 30 à 100
+            resolution = 50  # Augmenté de 30 à 100
             
             theta = np.deg2rad(donnees['angle'].values)
             r = donnees['rayon'].values
@@ -473,11 +473,10 @@ class Ui_MainWindow(object):
             Z = r_grid * np.cos(phi_mesh)
             
             # Configuration de la figure pour une meilleure qualité
-            plt.rcParams['figure.dpi'] = 150  # Augmenté de 80 à 150
+            plt.rcParams['figure.dpi'] = 150  # On garde la haute résolution
             plt.rcParams['savefig.dpi'] = 150
-            plt.rcParams['figure.figsize'] = [12, 10]  # Taille de figure augmentée
-            
-            fig = plt.figure()
+            # On ne touche plus à plt.rcParams['figure.figsize'] ici
+            fig = plt.figure(figsize=(8, 8))  # Taille réduite à 8x8 pouces
             ax = fig.add_subplot(111, projection='3d')
             
             # Normalisation des couleurs
@@ -648,9 +647,8 @@ class Ui_MainWindow(object):
             # Configuration de la figure pour une meilleure qualité
             plt.rcParams['figure.dpi'] = 150
             plt.rcParams['savefig.dpi'] = 150
-            plt.rcParams['figure.figsize'] = [12, 10]
-            
-            fig = plt.figure()
+            # On ne touche plus à plt.rcParams['figure.figsize'] ici
+            fig = plt.figure(figsize=(8, 8))  # Taille réduite à 8x8 pouces
             ax = fig.add_subplot(111, projection='3d')
             
             # Normalisation des couleurs
