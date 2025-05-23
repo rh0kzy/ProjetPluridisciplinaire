@@ -52,7 +52,7 @@ def reconstruct_3d_pattern(vertSlice, theta, horizSlice=None, phi=None, method='
     return pat, theta_grid, phi_grid
 
 
-def plot_3d_pattern(pattern3d, theta_grid, phi_grid, in_db=False, db_scale=20):
+def plot_3d_pattern(pattern3d, theta_grid, phi_grid, in_db=False, db_scale=20, title='3D Radiation Pattern'):
     """
     Plot a 3D radiation pattern using Plotly.
 
@@ -65,6 +65,8 @@ def plot_3d_pattern(pattern3d, theta_grid, phi_grid, in_db=False, db_scale=20):
         True if pattern3d is in dB scale. Default False.
     db_scale : float, optional
         Scale for dB conversion (20 for voltage, 10 for power).
+    title : str, optional
+        Title for the plot. Default '3D Radiation Pattern'.
     """
     # Prepare pattern data
     pat = np.copy(pattern3d)
@@ -82,7 +84,7 @@ def plot_3d_pattern(pattern3d, theta_grid, phi_grid, in_db=False, db_scale=20):
         )
     ])
     fig.update_layout(
-        title='3D Radiation Pattern',
+        title=title,  # Use the title argument
         scene=dict(
             xaxis_title='X', yaxis_title='Y', zaxis_title='Z'
         )
