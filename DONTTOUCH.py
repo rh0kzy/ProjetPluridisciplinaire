@@ -473,25 +473,192 @@ class Ui_MainWindow(object):
             self.barre_etat.showMessage("Erreur lors du tracé 2D", 3000)
 
     def tracer_combine(self, donnees, titre=None):
-        """Superpose deux surfaces 3D dans un même graphique Plotly"""
+        """Affiche une fenêtre de dialogue pour choisir deux dates à comparer et trace les graphiques sphériques côte à côte"""
         try:
-            # Couleurs et données 2D
-            angles = donnees['angle']
-            rayons = donnees['rayon']
-            # Création de deux coupes 2D côte à côte
-            fig = make_subplots(rows=1, cols=2, subplot_titles=("Coupe θ", "Coupe φ"))
-            # Coupe θ
-            fig.add_trace(go.Scatter(x=angles, y=rayons, mode='lines', name='Coupe θ'), row=1, col=1)
-            # Coupe φ (identique ici, adapter si données distinctes)
-            fig.add_trace(go.Scatter(x=angles, y=rayons, mode='lines', name='Coupe φ'), row=1, col=2)
-            # Mise en forme des axes
-            for i in (1, 2):
-                fig.update_xaxes(title_text='Angle (°)', row=1, col=i)
-                fig.update_yaxes(title_text='Intensité Normalisée', row=1, col=i)
-            # Titre global
-            title_text = f"Coupes 2D - {titre}" if titre else "Coupes 2D"
-            fig.update_layout(title=title_text, width=900, height=400)
-            fig.show()
+            if not self.sections_donnees:
+                QMessageBox.information(None, "Information", "Aucune section par date détectée dans le fichier.")
+                return
+
+            # Création de la boîte de dialogue
+            dialog = QtWidgets.QDialog()
+            dialog.setWindowTitle("Sélection des dates")
+            dialog.setMinimumWidth(500)
+
+            # Layout principal
+            layout = QtWidgets.QVBoxLayout()
+
+            # Section de sélection des dates
+            date_group = QtWidgets.QGroupBox("Sélection des dates à comparer")
+            date_group.setStyleSheet(f"""
+                QGroupBox {{
+                    color: {self.primary_color};
+                    font-weight: bold;
+                    border: 2px solid {self.secondary_color};
+                    border-radius: 10px;
+                    margin-top: 10px;
+                }}
+                QGroupBox::title {{
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px;
+                }}
+            """
+            )
+
+            date_layout = QtWidgets.QVBoxLayout()
+
+            # Premier ComboBox pour la première date
+            first_date_label = QtWidgets.QLabel("Première date :")
+            first_date_label.setStyleSheet(f"color: {self.primary_color}; font-weight: bold;")
+            first_date_combo = QtWidgets.QComboBox()
+
+            # Deuxième ComboBox pour la deuxième date
+            second_date_label = QtWidgets.QLabel("Deuxième date :")
+            second_date_label.setStyleSheet(f"color: {self.primary_color}; font-weight: bold;")
+            second_date_combo = QtWidgets.QComboBox()
+
+            # Style commun pour les ComboBox
+            combo_style = f"""
+                QComboBox {{
+                    background-color: white;
+                    border: 2px solid {self.secondary_color};
+                    border-radius: 5px;
+                    padding: 5px;
+                    color: {self.primary_color};
+                    font-weight: bold;
+                }}
+                QComboBox::drop-down {{
+                    border: none;
+                }}
+                QComboBox::down-arrow {{
+                    image: url(down_arrow.png);
+                    width: 12px;
+                    height: 12px;
+                }}
+            """
+            first_date_combo.setStyleSheet(combo_style)
+            second_date_combo.setStyleSheet(combo_style)
+
+            # Remplir les ComboBox avec les dates disponibles
+            for date, heure, _ in self.sections_donnees:
+                date_str = f"{date} {heure}"
+                first_date_combo.addItem(date_str)
+                second_date_combo.addItem(date_str)
+
+            # Ajouter les widgets au layout des dates
+            date_layout.addWidget(first_date_label)
+            date_layout.addWidget(first_date_combo)
+            date_layout.addWidget(second_date_label)
+            date_layout.addWidget(second_date_combo)
+
+            date_group.setLayout(date_layout)
+            layout.addWidget(date_group)
+
+            # Boutons
+            button_layout = QtWidgets.QHBoxLayout()
+
+            ok_button = QtWidgets.QPushButton("Tracer")
+            cancel_button = QtWidgets.QPushButton("Annuler")
+
+            # Style des boutons
+            button_style = f"""
+                QPushButton {{
+                    background-color: {self.primary_color};
+                    color: {self.text_color};
+                    border-radius: 5px;
+                    padding: 8px 15px;
+                    font-weight: bold;
+                }}
+                QPushButton:hover {{
+                    background-color: {self.secondary_color};
+                }}
+            """
+            ok_button.setStyleSheet(button_style)
+            cancel_button.setStyleSheet(button_style)
+
+            button_layout.addWidget(ok_button)
+            button_layout.addWidget(cancel_button)
+            layout.addLayout(button_layout)
+
+            dialog.setLayout(layout)
+
+            # Connexion des boutons
+            ok_button.clicked.connect(dialog.accept)
+            cancel_button.clicked.connect(dialog.reject)
+
+            # Affichage de la boîte de dialogue
+            if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
+                # Récupérer les indices des dates sélectionnées
+                first_index = first_date_combo.currentIndex()
+                second_index = second_date_combo.currentIndex()
+
+                if first_index >= 0 and second_index >= 0:
+                    # Charger les données des deux sections sélectionnées
+                    _, _, rayons1 = self.sections_donnees[first_index]
+                    _, _, rayons2 = self.sections_donnees[second_index]
+
+                    # Préparation des données pour le premier graphique
+                    angles_rad1 = np.deg2rad(np.linspace(0, 360, len(rayons1), endpoint=False))
+                    rayons_lin1 = 10 ** (np.array(rayons1) / 20)
+                    pattern_3d_1, theta_grid1, phi_grid1 = reconstruct_3d_pattern(rayons_lin1, angles_rad1)
+
+                    # Préparation des données pour le deuxième graphique
+                    angles_rad2 = np.deg2rad(np.linspace(0, 360, len(rayons2), endpoint=False))
+                    rayons_lin2 = 10 ** (np.array(rayons2) / 20)
+                    pattern_3d_2, theta_grid2, phi_grid2 = reconstruct_3d_pattern(rayons_lin2, angles_rad2)
+
+                    # Création de la figure avec deux sous-graphiques pour les surfaces 3D
+                    fig = make_subplots(
+                        rows=1, cols=2,
+                        specs=[[{"type": "surface"}, {"type": "surface"}]],
+                        subplot_titles=(first_date_combo.currentText(), second_date_combo.currentText())
+                    )
+
+                    # Ajout du premier graphique sphérique
+                    fig.add_trace(
+                        go.Surface(
+                            x=pattern_3d_1 * np.sin(theta_grid1) * np.cos(phi_grid1),
+                            y=pattern_3d_1 * np.sin(theta_grid1) * np.sin(phi_grid1),
+                            z=pattern_3d_1 * np.cos(theta_grid1),
+                            colorscale='Viridis',
+                            name=first_date_combo.currentText()
+                        ),
+                        row=1, col=1
+                    )
+
+                    # Ajout du deuxième graphique sphérique
+                    fig.add_trace(
+                        go.Surface(
+                            x=pattern_3d_2 * np.sin(theta_grid2) * np.cos(phi_grid2),
+                            y=pattern_3d_2 * np.sin(theta_grid2) * np.sin(phi_grid2),
+                            z=pattern_3d_2 * np.cos(theta_grid2),
+                            colorscale='Viridis',
+                            name=second_date_combo.currentText()
+                        ),
+                        row=1, col=2
+                    )
+
+                    # Mise à jour du layout
+                    fig.update_layout(
+                        title="Comparaison des diagrammes sphériques",
+                        width=1200,
+                        height=600,
+                        showlegend=True
+                    )
+
+                    # Mise à jour des scènes
+                    for i in range(1, 3):
+                        fig.update_scenes(
+                            aspectmode='cube',
+                            xaxis_title='X',
+                            yaxis_title='Y',
+                            zaxis_title='Z',
+                            row=1, col=i
+                        )
+
+                    fig.show()
+                    self.barre_etat.showMessage("Tracé des graphiques sphériques effectué avec succès", 3000)
+
         except Exception as e:
             QMessageBox.critical(None, "Erreur", f"Erreur dans le tracé combiné : {str(e)}")
             self.barre_etat.showMessage("Erreur lors du tracé combiné", 3000)
