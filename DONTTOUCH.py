@@ -418,54 +418,30 @@ class Ui_MainWindow(object):
             self.barre_etat.showMessage("Erreur lors du tracé polaire", 3000)
         
     def tracer_spherique(self, donnees, titre=None):
-        """Trace un pattern sphérique 3D à partir des données chargées.
-        Tente d'utiliser les données d'angle de 0 à 180 degrés pour la coupe thêta.
-        """
+        """Trace un pattern sphérique 3D à partir des données chargées."""
         try:
-            original_angles_deg = donnees['angle'].values
-            original_rayons = donnees['rayon'].values
+            # Récupération des données exactes (sans normalisation pour l'export)
+            angles_deg = donnees['angle'].values
+            rayons = donnees['rayon'].values
 
-            # Sort data by angle first
-            sort_indices = np.argsort(original_angles_deg)
-            sorted_angles_deg = original_angles_deg[sort_indices]
-            sorted_rayons = original_rayons[sort_indices]
+            # Conversion en radians
+            angles_rad = np.deg2rad(angles_deg)
 
-            # Select data for theta = 0 to 180 degrees for standard 3D plotting
-            # A small epsilon is used with searchsorted to ensure 180.0 is included on the left side of the cut.
-            idx_end_180_slice = np.searchsorted(sorted_angles_deg, 180.00001, side='right')
+            # Conversion des rayons en valeurs linéaires (si les fonctions 3D attendent cela)
+            # Si les valeurs de rayons sont déjà linéaires, commenter la ligne ci-dessous
+            rayons_lin = 10 ** (rayons / 20) # Convertir dB en linéaire
+
+            # Reconstruction du pattern 3D
+            # Assurez-vous que reconstruct_3d_pattern peut gérer vos données d'angle
+            pattern_3d, theta_grid, phi_grid = reconstruct_3d_pattern(rayons_lin, angles_rad)
+
+            # Création du titre
+            plot_title = f"Diagramme Sphérique 3D - {titre}" if titre else "Diagramme Sphérique 3D"
+
+            # Tracé du pattern 3D
+            plot_3d_pattern(pattern_3d, theta_grid, phi_grid, title=plot_title)
             
-            selected_angles_deg_for_theta = sorted_angles_deg[:idx_end_180_slice]
-            selected_rayons_for_theta = sorted_rayons[:idx_end_180_slice]
-
-            # Determine which set of angles/rayons to use for plotting
-            # Default to using the 0-180 selection if it has enough points.
-            theta_to_plot_deg = selected_angles_deg_for_theta
-            rayons_to_plot = selected_rayons_for_theta
-
-            if len(selected_angles_deg_for_theta) < 2 and len(sorted_angles_deg) >= 2:
-                # Fallback to using all data if the 0-180 slice is too small (0 or 1 point)
-                # and the original data had more points. This avoids plotting a degenerate shape.
-                theta_to_plot_deg = sorted_angles_deg
-                rayons_to_plot = sorted_rayons
-            elif len(selected_angles_deg_for_theta) == 0 and len(sorted_angles_deg) > 0:
-                # Fallback if selection is empty but original data exists (should be rare with linspace(0,...))
-                theta_to_plot_deg = sorted_angles_deg
-                rayons_to_plot = sorted_rayons
-            
-            if len(theta_to_plot_deg) == 0:
-                QMessageBox.information(None, "Information", "Pas de données d'angle valides pour le tracé sphérique.")
-                self.barre_etat.showMessage("Données insuffisantes pour tracé sphérique", 3000)
-                return
-
-            theta_rad_for_3d = np.deg2rad(theta_to_plot_deg)
-            lin_rayons_for_3d = 10 ** (rayons_to_plot / 20)
-
-            # Reconstruct and plot 3D pattern
-            pat3d, thg, phg = reconstruct_3d_pattern(lin_rayons_for_3d, theta_rad_for_3d)
-            
-            plot_title = f"Diagramme Sphérique 3D - {titre}" if titre else "Diagramme Sphérique 3D Normalisé"
-            plot_3d_pattern(pat3d, thg, phg, title=plot_title) # Pass the constructed title
-            self.barre_etat.showMessage("Tracé sphérique effectué.", 3000)
+            self.barre_etat.showMessage("Tracé sphérique effectué avec succès", 3000)
 
         except Exception as e:
             QMessageBox.critical(None, "Erreur", f"Erreur dans le tracé sphérique : {str(e)}")
