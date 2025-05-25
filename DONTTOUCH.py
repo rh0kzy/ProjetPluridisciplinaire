@@ -17,12 +17,12 @@ class Ui_MainWindow(object):
         font.setFamily("Montserrat")
         font.setPointSize(12)
 
-        # Palette de couleurs
-        self.primary_color = "#031045"
-        self.secondary_color = "#4ECDC4"
-        self.accent_color = "#FF6B6B"
-        self.text_color = "#FFFFFF"
-        self.background_color = "#F5F7FA"
+        # Palette de couleurs restaurée
+        self.primary_color = "#031045"  # Bleu foncé original
+        self.secondary_color = "#4ECDC4"  # Vert turquoise
+        self.accent_color = "#FF6B6B"  # Rouge vif
+        self.text_color = "#FFFFFF"  # Blanc
+        self.background_color = "#F5F7FA"  # Gris clair
 
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -423,8 +423,8 @@ class Ui_MainWindow(object):
             angles_deg = donnees['angle'].values
             rayons = donnees['rayon'].values
 
-            # Appliquer une moyenne mobile pour lisser les rayons
-            window_size = 5  # Taille de la fenêtre pour la moyenne mobile
+            # Appliquer une moyenne mobile pour lisser les rayons avec une fenêtre plus grande
+            window_size = 10  # Taille de la fenêtre pour une moyenne mobile plus lisse
             rayons = np.convolve(rayons, np.ones(window_size)/window_size, mode='same')
 
             # Conversion en radians
