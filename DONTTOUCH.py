@@ -423,6 +423,10 @@ class Ui_MainWindow(object):
             angles_deg = donnees['angle'].values
             rayons = donnees['rayon'].values
 
+            # Appliquer une moyenne mobile pour lisser les rayons
+            window_size = 5  # Taille de la fenêtre pour la moyenne mobile
+            rayons = np.convolve(rayons, np.ones(window_size)/window_size, mode='same')
+
             # Conversion en radians
             angles_rad = np.deg2rad(angles_deg)
 
@@ -642,6 +646,11 @@ class Ui_MainWindow(object):
                     # Charger les données des deux sections sélectionnées
                     _, _, rayons1 = self.sections_donnees[first_index]
                     _, _, rayons2 = self.sections_donnees[second_index]
+
+                    # Appliquer une moyenne mobile pour lisser les rayons
+                    window_size = 5  # Taille de la fenêtre pour la moyenne mobile
+                    rayons1 = np.convolve(rayons1, np.ones(window_size)/window_size, mode='same')
+                    rayons2 = np.convolve(rayons2, np.ones(window_size)/window_size, mode='same')
 
                     # Convertir les listes de rayons en tableaux NumPy
                     rayons1 = np.array(rayons1)
