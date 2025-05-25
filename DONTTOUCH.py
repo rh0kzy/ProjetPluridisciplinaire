@@ -667,13 +667,24 @@ class Ui_MainWindow(object):
                     y2 = pattern_3d_2 * np.sin(theta_grid2) * np.sin(phi_grid2)
                     z2 = pattern_3d_2 * np.cos(theta_grid2)
 
+                    # Appliquer une rotation au deuxième diagramme pour l'orienter vers l'axe X
+                    # Rotation de -90 degrés autour de l'axe Y pour aligner l'axe Z d'origine avec l'axe X
+                    angle_rad_y = np.deg2rad(-90)
+                    x2_rotated = x2 * np.cos(angle_rad_y) + z2 * np.sin(angle_rad_y)
+                    y2_rotated = y2
+                    z2_rotated = -x2 * np.sin(angle_rad_y) + z2 * np.cos(angle_rad_y)
+
+                    # Si on veut l'orienter vers +X au lieu de -X, on peut faire une rotation supplémentaire de 180 autour de Z
+                    # angle_rad_z = np.deg2rad(180)
+                    # x2_final = x2_rotated * np.cos(angle_rad_z) - y2_rotated * np.sin(angle_rad_z)
+
                     # Création des maillages PyVista
                     mesh1 = pv.StructuredGrid(x1, y1, z1)
                     # Convert normalized linear gain to dB scale for coloring
                     gain_db_for_coloring1 = 20 * np.log10(pattern_3d_1 + 1e-12)
                     mesh1.point_data['Gain_dB'] = gain_db_for_coloring1.flatten()
 
-                    mesh2 = pv.StructuredGrid(x2, y2, z2)
+                    mesh2 = pv.StructuredGrid(x2_rotated, y2_rotated, z2_rotated)
                     # Convert normalized linear gain to dB scale for coloring
                     gain_db_for_coloring2 = 20 * np.log10(pattern_3d_2 + 1e-12)
                     mesh2.point_data['Gain_dB'] = gain_db_for_coloring2.flatten()
@@ -684,7 +695,7 @@ class Ui_MainWindow(object):
                     # Ajout d'une sphère de référence
                     # Calculate the maximum radius from both patterns
                     max_r1 = np.max(np.sqrt(x1**2 + y1**2 + z1**2))
-                    max_r2 = np.max(np.sqrt(x2**2 + y2**2 + z2**2))
+                    max_r2 = np.max(np.sqrt(x2_rotated**2 + y2_rotated**2 + z2_rotated**2))
                     max_r = max(max_r1, max_r2)
                     sphere = pv.Sphere(radius=max_r * 1.1, theta_resolution=20, phi_resolution=20) # Add some padding
                     plotter.add_mesh(sphere, color='lightgray', opacity=0.15, style='wireframe')
