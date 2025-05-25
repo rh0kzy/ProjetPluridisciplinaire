@@ -439,7 +439,12 @@ class Ui_MainWindow(object):
 
             # Création du maillage PyVista
             mesh = pv.StructuredGrid(x, y, z)
-            mesh.point_data['Gain_dB'] = pattern_3d.flatten()
+
+            # Convert the normalized linear gain (pattern_3d) to dB scale for coloring
+            # Add a small epsilon to avoid log10(0) if pattern_3d contains zeros
+            gain_db_for_coloring = 20 * np.log10(pattern_3d + 1e-12)
+
+            mesh.point_data['Gain_dB'] = gain_db_for_coloring.flatten()
 
             # Création de la figure PyVista
             plotter = pv.Plotter(notebook=False, window_size=[1200, 800])
@@ -664,13 +669,25 @@ class Ui_MainWindow(object):
 
                     # Création des maillages PyVista
                     mesh1 = pv.StructuredGrid(x1, y1, z1)
-                    mesh1.point_data['Gain_dB'] = pattern_3d_1.flatten()
+                    # Convert normalized linear gain to dB scale for coloring
+                    gain_db_for_coloring1 = 20 * np.log10(pattern_3d_1 + 1e-12)
+                    mesh1.point_data['Gain_dB'] = gain_db_for_coloring1.flatten()
 
                     mesh2 = pv.StructuredGrid(x2, y2, z2)
-                    mesh2.point_data['Gain_dB'] = pattern_3d_2.flatten()
+                    # Convert normalized linear gain to dB scale for coloring
+                    gain_db_for_coloring2 = 20 * np.log10(pattern_3d_2 + 1e-12)
+                    mesh2.point_data['Gain_dB'] = gain_db_for_coloring2.flatten()
 
                     # Création d'une figure PyVista unique
                     plotter = pv.Plotter(notebook=False, window_size=[1200, 800])
+
+                    # Ajout d'une sphère de référence
+                    # Calculate the maximum radius from both patterns
+                    max_r1 = np.max(np.sqrt(x1**2 + y1**2 + z1**2))
+                    max_r2 = np.max(np.sqrt(x2**2 + y2**2 + z2**2))
+                    max_r = max(max_r1, max_r2)
+                    sphere = pv.Sphere(radius=max_r * 1.1, theta_resolution=20, phi_resolution=20) # Add some padding
+                    plotter.add_mesh(sphere, color='lightgray', opacity=0.15, style='wireframe')
 
                     # Premier graphique (à gauche)
                     plotter.add_mesh(mesh1,
