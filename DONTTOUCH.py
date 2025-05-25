@@ -451,12 +451,15 @@ class Ui_MainWindow(object):
             mesh.point_data['Gain_dB'] = gain_db_for_coloring.flatten()
 
             # Création de la figure PyVista
-            plotter = pv.Plotter(notebook=False, window_size=[1200, 800])
+            plotter = pv.Plotter(notebook=False, window_size=[1600, 900])  # Increased window size for better visibility
+            plotter.set_background('white')  # Set background to white for a clean look
+            plotter.add_axes(line_width=2, color='black')  # Enhanced axes with black color and thicker lines
+            plotter.add_axes_at_origin(line_width=2)  # Retained line_width for enhanced appearance
             
             # Ajout du maillage avec colormap
             plotter.add_mesh(mesh,
                            scalars='Gain_dB',
-                           cmap='viridis',
+                           cmap='plasma',  # Changed from 'viridis' to 'plasma'
                            opacity=0.8,
                            show_edges=False,
                            smooth_shading=True,
@@ -469,25 +472,9 @@ class Ui_MainWindow(object):
             sphere = pv.Sphere(radius=max_r, theta_resolution=20, phi_resolution=20)
             plotter.add_mesh(sphere, color='lightgray', opacity=0.15, style='wireframe')
 
-            # Ajout de la barre de couleur
-            plotter.add_scalar_bar('Gain (dB)', 
-                                 vertical=True, 
-                                 interactive=False,
-                                 fmt='%.1f',
-                                 title_font_size=12,
-                                 label_font_size=10)
-
             # Ajout du titre
             plot_title = f"Diagramme Sphérique 3D - {titre}" if titre else "Diagramme Sphérique 3D"
-            plotter.add_title(plot_title, font_size=16)
-
-            # Ajout des axes d'orientation
-            plotter.add_axes()
-            plotter.add_axes_at_origin()
-
-            # Configuration de la caméra
-            plotter.camera_position = 'iso'
-            plotter.camera.zoom(1.2)
+            plotter.add_title(plot_title, font_size=20, color='black')  # Increased title font size and set color to black
 
             # Affichage de la figure
             plotter.show()
@@ -699,7 +686,10 @@ class Ui_MainWindow(object):
                     mesh2.point_data['Gain_dB'] = gain_db_for_coloring2.flatten()
 
                     # Création d'une figure PyVista unique
-                    plotter = pv.Plotter(notebook=False, window_size=[1200, 800])
+                    plotter = pv.Plotter(notebook=False, window_size=[1600, 900])  # Increased window size for better visibility
+                    plotter.set_background('white')  # Set background to white for a clean look
+                    plotter.add_axes(line_width=2, color='black')  # Enhanced axes with black color and thicker lines
+                    plotter.add_axes_at_origin(line_width=2)  # Retained line_width for enhanced appearance
 
                     # Ajout d'une sphère de référence
                     # Calculate the maximum radius from both patterns
