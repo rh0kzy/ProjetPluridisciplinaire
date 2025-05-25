@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from mayavi import mlab
+import pyvista as pv
 from PyQt6.QtGui import QAction 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMessageBox, QFileDialog
@@ -426,19 +426,62 @@ class Ui_MainWindow(object):
             # Conversion en radians
             angles_rad = np.deg2rad(angles_deg)
 
-            # Conversion des rayons en valeurs linéaires (si les fonctions 3D attendent cela)
-            # Si les valeurs de rayons sont déjà linéaires, commenter la ligne ci-dessous
-            rayons_lin = 10 ** (rayons / 20) # Convertir dB en linéaire
+            # Conversion des rayons en valeurs linéaires
+            rayons_lin = 10 ** (rayons / 20)  # Convertir dB en linéaire
 
             # Reconstruction du pattern 3D
-            # Assurez-vous que reconstruct_3d_pattern peut gérer vos données d'angle
             pattern_3d, theta_grid, phi_grid = reconstruct_3d_pattern(rayons_lin, angles_rad)
 
-            # Création du titre
-            plot_title = f"Diagramme Sphérique 3D - {titre}" if titre else "Diagramme Sphérique 3D"
+            # Conversion en coordonnées cartésiennes
+            x = pattern_3d * np.sin(theta_grid) * np.cos(phi_grid)
+            y = pattern_3d * np.sin(theta_grid) * np.sin(phi_grid)
+            z = pattern_3d * np.cos(theta_grid)
 
-            # Tracé du pattern 3D
-            plot_3d_pattern(pattern_3d, theta_grid, phi_grid, title=plot_title)
+            # Création du maillage PyVista
+            mesh = pv.StructuredGrid(x, y, z)
+            mesh.point_data['Gain_dB'] = pattern_3d.flatten()
+
+            # Création de la figure PyVista
+            plotter = pv.Plotter(notebook=False, window_size=[1200, 800])
+            
+            # Ajout du maillage avec colormap
+            plotter.add_mesh(mesh,
+                           scalars='Gain_dB',
+                           cmap='viridis',
+                           opacity=0.8,
+                           show_edges=False,
+                           smooth_shading=True,
+                           lighting=True,
+                           specular=0.5,
+                           specular_power=15)
+
+            # Ajout d'une sphère de référence
+            max_r = np.max(np.sqrt(x**2 + y**2 + z**2))
+            sphere = pv.Sphere(radius=max_r, theta_resolution=20, phi_resolution=20)
+            plotter.add_mesh(sphere, color='lightgray', opacity=0.15, style='wireframe')
+
+            # Ajout de la barre de couleur
+            plotter.add_scalar_bar('Gain (dB)', 
+                                 vertical=True, 
+                                 interactive=False,
+                                 fmt='%.1f',
+                                 title_font_size=12,
+                                 label_font_size=10)
+
+            # Ajout du titre
+            plot_title = f"Diagramme Sphérique 3D - {titre}" if titre else "Diagramme Sphérique 3D"
+            plotter.add_title(plot_title, font_size=16)
+
+            # Ajout des axes d'orientation
+            plotter.add_axes()
+            plotter.add_axes_at_origin()
+
+            # Configuration de la caméra
+            plotter.camera_position = 'iso'
+            plotter.camera.zoom(1.2)
+
+            # Affichage de la figure
+            plotter.show()
             
             self.barre_etat.showMessage("Tracé sphérique effectué avec succès", 3000)
 
@@ -501,8 +544,7 @@ class Ui_MainWindow(object):
                     left: 10px;
                     padding: 0 5px;
                 }}
-            """
-            )
+            """)
 
             date_layout = QtWidgets.QVBoxLayout()
 
@@ -596,6 +638,10 @@ class Ui_MainWindow(object):
                     _, _, rayons1 = self.sections_donnees[first_index]
                     _, _, rayons2 = self.sections_donnees[second_index]
 
+                    # Convertir les listes de rayons en tableaux NumPy
+                    rayons1 = np.array(rayons1)
+                    rayons2 = np.array(rayons2)
+
                     # Préparation des données pour le premier graphique
                     angles_rad1 = np.deg2rad(np.linspace(0, 360, len(rayons1), endpoint=False))
                     rayons_lin1 = 10 ** (np.array(rayons1) / 20)
@@ -606,35 +652,54 @@ class Ui_MainWindow(object):
                     rayons_lin2 = 10 ** (np.array(rayons2) / 20)
                     pattern_3d_2, theta_grid2, phi_grid2 = reconstruct_3d_pattern(rayons_lin2, angles_rad2)
 
-                    # Création de la figure avec deux sous-graphiques pour les surfaces 3D
-                    mlab.figure("Comparaison des diagrammes sphériques", size=(1200, 600))
-                    
-                    # Premier graphique (à gauche)
-                    mlab.subplot(121)
+                    # Conversion en coordonnées cartésiennes pour le premier graphique
                     x1 = pattern_3d_1 * np.sin(theta_grid1) * np.cos(phi_grid1)
                     y1 = pattern_3d_1 * np.sin(theta_grid1) * np.sin(phi_grid1)
                     z1 = pattern_3d_1 * np.cos(theta_grid1)
-                    surf1 = mlab.mesh(x1, y1, z1, scalars=pattern_3d_1, colormap='viridis')
-                    mlab.colorbar(surf1, title='Magnitude')
-                    mlab.title(first_date_combo.currentText())
-                    mlab.xlabel('X')
-                    mlab.ylabel('Y')
-                    mlab.zlabel('Z')
-                    
-                    # Deuxième graphique (à droite)
-                    mlab.subplot(122)
+
+                    # Conversion en coordonnées cartésiennes pour le deuxième graphique
                     x2 = pattern_3d_2 * np.sin(theta_grid2) * np.cos(phi_grid2)
                     y2 = pattern_3d_2 * np.sin(theta_grid2) * np.sin(phi_grid2)
                     z2 = pattern_3d_2 * np.cos(theta_grid2)
-                    surf2 = mlab.mesh(x2, y2, z2, scalars=pattern_3d_2, colormap='viridis')
-                    mlab.colorbar(surf2, title='Magnitude')
-                    mlab.title(second_date_combo.currentText())
-                    mlab.xlabel('X')
-                    mlab.ylabel('Y')
-                    mlab.zlabel('Z')
-                    
-                    # Afficher la figure
-                    mlab.show()
+
+                    # Création des maillages PyVista
+                    mesh1 = pv.StructuredGrid(x1, y1, z1)
+                    mesh1.point_data['Gain_dB'] = pattern_3d_1.flatten()
+
+                    mesh2 = pv.StructuredGrid(x2, y2, z2)
+                    mesh2.point_data['Gain_dB'] = pattern_3d_2.flatten()
+
+                    # Création d'une figure PyVista unique
+                    plotter = pv.Plotter(notebook=False, window_size=[1200, 800])
+
+                    # Premier graphique (à gauche)
+                    plotter.add_mesh(mesh1,
+                                   scalars='Gain_dB',
+                                   cmap='viridis',
+                                   opacity=0.8,
+                                   show_edges=False,
+                                   smooth_shading=True,
+                                   lighting=True)
+
+                    # Ajout de la barre de couleur pour le premier graphique
+                    plotter.add_scalar_bar('Gain (dB)', vertical=True, interactive=False,
+                                         title=first_date_combo.currentText(), fmt='%.1f')
+
+                    # Deuxième graphique (à droite)
+                    plotter.add_mesh(mesh2,
+                                   scalars='Gain_dB',
+                                   cmap='plasma',
+                                   opacity=0.8,
+                                   show_edges=False,
+                                   smooth_shading=True,
+                                   lighting=True)
+
+                    # Ajout de la barre de couleur pour le deuxième graphique
+                    plotter.add_scalar_bar('Gain (dB)', vertical=True, interactive=False,
+                                         title=second_date_combo.currentText(), fmt='%.1f')
+
+                    # Affichage de la figure
+                    plotter.show()
                     
                     self.barre_etat.showMessage("Tracé des graphiques sphériques effectué avec succès", 3000)
 
