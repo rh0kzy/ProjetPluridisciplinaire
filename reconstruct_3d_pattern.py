@@ -1,5 +1,5 @@
 import numpy as np
-import plotly.graph_objects as go
+from mayavi import mlab
 
 def reconstruct_3d_pattern(vertSlice, theta, horizSlice=None, phi=None, method='Summation'):
     """
@@ -54,7 +54,7 @@ def reconstruct_3d_pattern(vertSlice, theta, horizSlice=None, phi=None, method='
 
 def plot_3d_pattern(pattern3d, theta_grid, phi_grid, in_db=False, db_scale=20, title='3D Radiation Pattern'):
     """
-    Plot a 3D radiation pattern using Plotly.
+    Plot a 3D radiation pattern using Mayavi.
 
     Parameters:
     pattern3d : 2D ndarray
@@ -72,24 +72,28 @@ def plot_3d_pattern(pattern3d, theta_grid, phi_grid, in_db=False, db_scale=20, t
     pat = np.copy(pattern3d)
     if in_db:
         pat = 10 ** (pat / db_scale)
+    
     # Convert spherical to Cartesian coordinates
     x = pat * np.sin(theta_grid) * np.cos(phi_grid)
     y = pat * np.sin(theta_grid) * np.sin(phi_grid)
     z = pat * np.cos(theta_grid)
-    # Create Plotly surface plot
-    fig = go.Figure(data=[
-        go.Surface(
-            x=x, y=y, z=z,
-            surfacecolor=pat, colorscale='Viridis', cmin=pat.min(), cmax=pat.max()
-        )
-    ])
-    fig.update_layout(
-        title=title,  # Use the title argument
-        scene=dict(
-            xaxis_title='X', yaxis_title='Y', zaxis_title='Z'
-        )
-    )
-    fig.show()
+
+    # Create Mayavi figure
+    mlab.figure(title, size=(800, 600))
+    
+    # Create the surface plot
+    surf = mlab.mesh(x, y, z, scalars=pat, colormap='viridis')
+    
+    # Add colorbar
+    mlab.colorbar(surf, title='Magnitude')
+    
+    # Add axes labels
+    mlab.xlabel('X')
+    mlab.ylabel('Y')
+    mlab.zlabel('Z')
+    
+    # Show the plot
+    mlab.show()
 
 if __name__ == '__main__':
     # Example: Omni-directional dipole

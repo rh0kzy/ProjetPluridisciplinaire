@@ -3,8 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+from mayavi import mlab
 from PyQt6.QtGui import QAction 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMessageBox, QFileDialog
@@ -608,55 +607,35 @@ class Ui_MainWindow(object):
                     pattern_3d_2, theta_grid2, phi_grid2 = reconstruct_3d_pattern(rayons_lin2, angles_rad2)
 
                     # Création de la figure avec deux sous-graphiques pour les surfaces 3D
-                    fig = make_subplots(
-                        rows=1, cols=2,
-                        specs=[[{"type": "surface"}, {"type": "surface"}]],
-                        subplot_titles=(first_date_combo.currentText(), second_date_combo.currentText())
-                    )
-
-                    # Ajout du premier graphique sphérique
-                    fig.add_trace(
-                        go.Surface(
-                            x=pattern_3d_1 * np.sin(theta_grid1) * np.cos(phi_grid1),
-                            y=pattern_3d_1 * np.sin(theta_grid1) * np.sin(phi_grid1),
-                            z=pattern_3d_1 * np.cos(theta_grid1),
-                            colorscale='Viridis',
-                            name=first_date_combo.currentText()
-                        ),
-                        row=1, col=1
-                    )
-
-                    # Ajout du deuxième graphique sphérique
-                    fig.add_trace(
-                        go.Surface(
-                            x=pattern_3d_2 * np.sin(theta_grid2) * np.cos(phi_grid2),
-                            y=pattern_3d_2 * np.sin(theta_grid2) * np.sin(phi_grid2),
-                            z=pattern_3d_2 * np.cos(theta_grid2),
-                            colorscale='Viridis',
-                            name=second_date_combo.currentText()
-                        ),
-                        row=1, col=2
-                    )
-
-                    # Mise à jour du layout
-                    fig.update_layout(
-                        title="Comparaison des diagrammes sphériques",
-                        width=1200,
-                        height=600,
-                        showlegend=True
-                    )
-
-                    # Mise à jour des scènes
-                    for i in range(1, 3):
-                        fig.update_scenes(
-                            aspectmode='cube',
-                            xaxis_title='X',
-                            yaxis_title='Y',
-                            zaxis_title='Z',
-                            row=1, col=i
-                        )
-
-                    fig.show()
+                    mlab.figure("Comparaison des diagrammes sphériques", size=(1200, 600))
+                    
+                    # Premier graphique (à gauche)
+                    mlab.subplot(121)
+                    x1 = pattern_3d_1 * np.sin(theta_grid1) * np.cos(phi_grid1)
+                    y1 = pattern_3d_1 * np.sin(theta_grid1) * np.sin(phi_grid1)
+                    z1 = pattern_3d_1 * np.cos(theta_grid1)
+                    surf1 = mlab.mesh(x1, y1, z1, scalars=pattern_3d_1, colormap='viridis')
+                    mlab.colorbar(surf1, title='Magnitude')
+                    mlab.title(first_date_combo.currentText())
+                    mlab.xlabel('X')
+                    mlab.ylabel('Y')
+                    mlab.zlabel('Z')
+                    
+                    # Deuxième graphique (à droite)
+                    mlab.subplot(122)
+                    x2 = pattern_3d_2 * np.sin(theta_grid2) * np.cos(phi_grid2)
+                    y2 = pattern_3d_2 * np.sin(theta_grid2) * np.sin(phi_grid2)
+                    z2 = pattern_3d_2 * np.cos(theta_grid2)
+                    surf2 = mlab.mesh(x2, y2, z2, scalars=pattern_3d_2, colormap='viridis')
+                    mlab.colorbar(surf2, title='Magnitude')
+                    mlab.title(second_date_combo.currentText())
+                    mlab.xlabel('X')
+                    mlab.ylabel('Y')
+                    mlab.zlabel('Z')
+                    
+                    # Afficher la figure
+                    mlab.show()
+                    
                     self.barre_etat.showMessage("Tracé des graphiques sphériques effectué avec succès", 3000)
 
         except Exception as e:
