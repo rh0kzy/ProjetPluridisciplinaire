@@ -7,7 +7,53 @@ import pyvista as pv
 from PyQt6.QtGui import QAction 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMessageBox, QFileDialog
-from reconstruct_3d_pattern import reconstruct_3d_pattern, plot_3d_pattern
+from mayavi import mlab
+
+# Fonction pour reconstruire un motif 3D à partir de tranches 2D
+def reconstruct_3d_pattern(vertSlice, theta, horizSlice=None, phi=None, method='Summation'):
+    theta = np.asarray(theta).reshape(-1)
+    r_vert = np.asarray(vertSlice).reshape(-1)
+
+    if horizSlice is None or phi is None:
+        phi = np.linspace(0, 2 * np.pi, 361)
+        pattern3d = np.tile(r_vert[:, None], (1, len(phi)))
+        theta_grid, phi_grid = np.meshgrid(theta, phi, indexing='ij')
+        return pattern3d, theta_grid, phi_grid
+
+    phi = np.asarray(phi).reshape(-1)
+    r_horiz = np.asarray(horizSlice).reshape(-1)
+
+    theta_grid, phi_grid = np.meshgrid(theta, phi, indexing='ij')
+    v = r_vert[:, None]
+    h = r_horiz[None, :]
+
+    if method.lower() == 'summation':
+        pat = v + h
+    elif method.lower() == 'crossweighted':
+        pat = np.sqrt(v * h)
+    else:
+        raise ValueError(f"Unknown method '{method}'. Choose 'Summation' or 'CrossWeighted'.")
+
+    pat = pat / np.max(pat)
+    return pat, theta_grid, phi_grid
+
+# Fonction pour tracer un motif 3D
+def plot_3d_pattern(pattern3d, theta_grid, phi_grid, in_db=False, db_scale=20, title='3D Radiation Pattern'):
+    pat = np.copy(pattern3d)
+    if in_db:
+        pat = 10 ** (pat / db_scale)
+
+    x = pat * np.sin(theta_grid) * np.cos(phi_grid)
+    y = pat * np.sin(theta_grid) * np.sin(phi_grid)
+    z = pat * np.cos(theta_grid)
+
+    mlab.figure(title, size=(800, 600))
+    surf = mlab.mesh(x, y, z, scalars=pat, colormap='viridis')
+    mlab.colorbar(surf, title='Magnitude')
+    mlab.xlabel('X')
+    mlab.ylabel('Y')
+    mlab.zlabel('Z')
+    mlab.show()
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
