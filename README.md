@@ -1,84 +1,114 @@
 # 📊 Polar & Spherical Data Visualizer
 
-A Python GUI application built with **PyQt6**, **Matplotlib**, and **Pandas** for loading, processing, and visualizing data in **polar** and **spherical** coordinate systems. The application also supports **serial communication via USB** for real-time data acquisition.
+A professional-grade Python application for analyzing and visualizing radiation patterns in polar and spherical coordinate systems. Designed for researchers, engineers, and antenna designers, this tool offers advanced features for data processing, visualization, and export.
 
 ---
 
 ## 🚀 Features
 
-✅ **Load Data from File**: Import `.txt` or `.csv` files containing data points.
-✅ **Plot in Polar Coordinates** 📊: Generate 2D polar graphs.
-✅ **Plot in Spherical Coordinates** 🌐: Generate 3D spherical graphs.
-✅ **USB Data Acquisition** 🔌: Read real-time data from a serial port (e.g., Arduino sensors).
-✅ **Interactive UI** 🎨: Designed using **PyQt6** with a modern look.
+### **Data Import**
+- Import `.txt` or `.csv` files containing radiation pattern data.
+- Automatic detection of date-based sections for organized analysis.
+
+### **Visualization Modes**
+- **Polar Coordinates** 📊: Generate 2D polar plots with customizable styles.
+- **Spherical Coordinates** 🌐: Create 3D spherical plots with advanced shading and lighting.
+- **Combined Visualization** 🔄: Compare multiple datasets side-by-side.
+- **2D Cartesian Plots** 📈: Visualize normalized data in 2D.
+
+### **Data Processing**
+- Apply moving averages for data smoothing.
+- Normalize data for accurate comparisons.
+- Export processed data to `.csv` files.
+
+### **Interactive UI**
+- Modern design using **PyQt6**.
+- Intuitive controls for loading, processing, and visualizing data.
+- Real-time feedback via status bar messages.
+
+### **Error Handling**
+- Comprehensive error messages for invalid inputs or file formats.
 
 ---
 
 ## 📦 Dependencies
+
 Ensure you have the following Python libraries installed:
 
 ```bash
-pip install pyqt6 pandas numpy matplotlib pyserial
+pip install pyqt6 pandas numpy matplotlib pyvista
 ```
 
 ---
 
 ## 🛠 Installation & Usage
 
+### **Installation**
+
 1️⃣ **Clone this repository:**
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone https://github.com/rh0kzy/ProjetPluridisciplinaire.git
+cd ProjetPluridisciplinaire
 ```
 
-2️⃣ **Run the application:**
+2️⃣ **Install dependencies:**
 ```bash
-python main.py
+pip install -r requirements.txt
+```
+
+### **Run the Application**
+```bash
+python DONTTOUCH.py
 ```
 
 ---
 
 ## 📁 File Structure
+
 ```
-📂 Your Project Directory
- ├── 📜 main.py            # Main application script
- ├── 📜 README.md          # Documentation (this file)
- ├── 📜 requirements.txt   # Required dependencies
- ├── 🖼️ IMG_4627.png        # Logo (blue marine version)
- ├── 🖼️ IMG_4627_white.png  # Logo (white version)
- ├── 📜 UI.ui              # Qt Designer UI file
- ├── 📜 UI.py              # PyQt converted UI file
+📂 ProjetPluridisciplinaire
+ ├── 📜 DONTTOUCH.py         # Main application script
+ ├── 📜 debug_import.py      # Debugging script
+ ├── 📜 README.md            # Original documentation
+ ├── 📜 README_PRO.md        # Professional documentation
+ ├── 📜 requirements.txt     # Required dependencies
+ ├── 🖼️ IMG_4627.png          # Logo (blue marine version)
+ ├── 🖼️ IMG_4627_white.png    # Logo (white version)
+ ├── 📜 DONTTOUCH.spec       # PyInstaller spec file
+ ├── 📂 build/               # Build artifacts
+ └── 📂 __pycache__/         # Compiled Python files
 ```
 
 ---
 
 ## 📌 Usage Guide
 
-### 🗂 Loading a File
+### **Loading a File**
 - Click **"Charger un fichier 📂"** and select a `.csv` or `.txt` file.
 - Data will be displayed in the UI.
 
-### 📊 Plotting Data
+### **Plotting Data**
 - Click **"Tracer en polaire 📊"** to generate a **2D polar plot**.
 - Click **"Tracer en sphérique 🌐"** to generate a **3D spherical plot**.
+- Click **"Tracer combiné 🔄"** to compare datasets side-by-side.
 
-### 🔌 Reading USB Data
-- Enter the **USB port name** (e.g., `COM3` on Windows, `/dev/ttyUSB0` on Linux/Mac).
-- Click **"Lire depuis USB 💾"** to start reading data.
+### **Exporting Data**
+- Processed data can be exported to `.csv` files for further analysis.
 
 ---
 
 ## 👨‍💻 Collaborators
+
 This project is developed by:
 - **Hiba Daghbouj**
 - **Rachid Hamdaoui**
 - **Aymen Belkadi**
 - **Guemaz Reda**
-- **Korichi Hannane**
 
 ---
 
 ## 🛡️ License
+
 This project is **private**. No external contributions are accepted.
 
 ---
@@ -86,4 +116,3 @@ This project is **private**. No external contributions are accepted.
 ### ✨ Author
 **Aymen Belkadi**  
 📧 Contact: [@rh0kzy]
-
